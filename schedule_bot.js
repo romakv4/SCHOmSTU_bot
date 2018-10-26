@@ -131,23 +131,24 @@ bot.on('callback_query', function (callbackQuery) {
 	|| hasAction(keyboards.faculty_choose_trow, action)) {
 		user_data = [];
 		faculty_pseudo = action;
-		user_data.push(msg.chat.id);
-		user_data.push(faculty_pseudo);
-		edit_message_params = bot_actions.chooseCourse(connection, msg, faculty_pseudo);
+		let faculty_id = settings_model.getFacultyId(connection, action);
+		user_data.push(faculty_id);
+		edit_message_params = bot_actions.chooseCourse(connection, msg, action);
 		bot.editMessageText(...edit_message_params);
 	}
 
 	if(faculty_pseudo != undefined && hasAction(keyboards.getCourseKeyboard(connection, faculty_pseudo), action)) {
 		course = action;
-		user_data.push(course);
 		edit_message_params = bot_actions.chooseGroup(connection, msg, faculty_pseudo, course);
 		bot.editMessageText(...edit_message_params);
 	}
 
 	if(faculty_pseudo != undefined && course != undefined && hasAction(keyboards.getGroupKeyboard(connection, faculty_pseudo, course), action)) {
 		group = action;
-		user_data.push(group);
-		let faculty_name = user_model.getUserFacultyName(connection, faculty_pseudo);
+		let group_id = settings_model.getGroupId(connection, action);
+		user_data.push(group_id);
+		user_data.push(msg.chat.id);
+		let faculty_name = user_model.getUserFacultyName(connection, user_data[0]);
 		edit_message_params = bot_actions.saveQuestion(connection, msg, faculty_name, course, group);
 		bot.editMessageText(...edit_message_params);
 	}
@@ -199,6 +200,7 @@ function hasAction(array, action) {
 	}
 }
 
+//Utilite method for debugging. Dont use in the bot.
 function strToHex(str) {
 	var hex_arr = [];
 	for (var n = 0, l = str.length; n < l; n ++) {

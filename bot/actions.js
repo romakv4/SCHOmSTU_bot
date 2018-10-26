@@ -81,9 +81,10 @@ function saveQuestion(connection, msg, faculty_name, course, group) {
 
 function getSettings(connection, msg) {
 	let user_settings = user_model.getUserData(connection, msg);
-	let user_faculty_name = user_model.getUserFacultyName(connection, user_settings.faculty);
+	let user_faculty_name = user_model.getUserFacultyName(connection, user_settings.faculty_id);
+	let user_group_data = user_model.getUserGroupData(connection, user_settings.group_id);
 
-	let text = `Ваши текущие параметры:\nФакультет: ${user_faculty_name}\nКурс: ${user_settings.course}\nГруппа: ${user_settings.ugroup}\nЧто вы хотите сделать далее?`;
+	let text = `Ваши текущие параметры:\nФакультет: ${user_faculty_name}\nКурс: ${user_group_data.course}\nГруппа: ${user_group_data.name}\nЧто вы хотите сделать далее?`;
 
 	let opts = {
 		chat_id: msg.chat.id,
@@ -162,7 +163,7 @@ function getScheduleMsgText(schedule) {
 			text += `*${schedule[i].day}, ${schedule[i].date}*\n`;
 			for(let j = 0; j < subjLength; j++){
 				subject = schedule[i].subjects[j];
-				text +=  `${subject.time}\n${subject.name}\n${subject.lecturer}\n_${subject.classroom}_\n-------------------------------\n`;
+				text +=  `${subject.time}\n${subject.name}\n${subject.lecturer}\n_${subject.classroom}_\n*${subject.group}*\n-------------------------------\n`;
 			}
 		}
 	} else {

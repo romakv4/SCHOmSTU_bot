@@ -39,7 +39,7 @@ function getCurWeekSchedule(groupOid) {
 		weekEnd = moment().endOf('week').add(1, 'days');
 	}
 	let schedule = cacher.getScheduleFromCache(groupOid, type, cacher.schedule_cache);
-	if (schedule === null) {
+  if (schedule === null) {
 		schedule = parsing.getScheduleFromResponse(groupOid, type, weekStart, weekEnd);
     cacher.scheduleCacher(groupOid, type, cacher.schedule_cache, schedule);
 	}
@@ -51,7 +51,7 @@ function getNextWeekSchedule(groupOid) {
 	let today = moment();
 	let weekStart;
 	let weekEnd;
-	if(today.format('dddd') === 'Sunday') {
+  if(today.format('dddd') === 'Sunday') {
 		weekStart = moment().add(1, 'days');
 		weekEnd = moment().add(7, 'days');
 	}	else {

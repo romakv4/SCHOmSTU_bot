@@ -32,11 +32,13 @@ function getScheduleFromResponse(groupOid, type, dateFrom, dateTo) {
 			let subject = $(pairs[j]).children('tr').children('td')[1].children[0].data.replace(/\s\s+/g, ' ').trim();
 			let lecturer = $(pairs[j]).children('tr').children('td')[1].children[2].data.replace(/\s\s+/g, ' ').trim();
 			let classroom = $(pairs[j]).children('tr').children('td')[1].children[4].data.replace(/\s\s+/g, ' ').trim();
+			let group = $(pairs[j]).children('tr').children('td')[1].children[6].data.replace(/\s\s+/g, ' ').trim();
 			subjects.push({
 				time: time,
 				name: subject,
 				lecturer: lecturer,
-				classroom: classroom
+				classroom: classroom,
+				group: group
 			});
 		}
 		schedule.push({

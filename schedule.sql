@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: localhost
--- Время создания: Окт 25 2018 г., 14:47
+-- Время создания: Окт 26 2018 г., 19:51
 -- Версия сервера: 5.7.22
 -- Версия PHP: 7.1.17
 
@@ -1085,10 +1085,9 @@ INSERT INTO `group_list` (`id`, `faculty_id`, `course`, `name`, `groupOid`) VALU
 
 CREATE TABLE `user` (
   `id` int(11) NOT NULL,
-  `chat_id` int(11) NOT NULL,
-  `faculty` varchar(60) NOT NULL,
-  `course` int(11) NOT NULL,
-  `ugroup` varchar(40) NOT NULL
+  `faculty_id` int(11) NOT NULL,
+  `group_id` int(11) NOT NULL,
+  `chat_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -1113,7 +1112,8 @@ ALTER TABLE `group_list`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `chat_id` (`chat_id`);
+  ADD KEY `faculty_id` (`faculty_id`),
+  ADD KEY `group_id` (`group_id`);
 
 --
 -- AUTO_INCREMENT для сохранённых таблиц
@@ -1135,7 +1135,7 @@ ALTER TABLE `group_list`
 -- AUTO_INCREMENT для таблицы `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Ограничения внешнего ключа сохраненных таблиц
@@ -1146,6 +1146,13 @@ ALTER TABLE `user`
 --
 ALTER TABLE `group_list`
   ADD CONSTRAINT `faculty_id_fk` FOREIGN KEY (`faculty_id`) REFERENCES `faculty` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Ограничения внешнего ключа таблицы `user`
+--
+ALTER TABLE `user`
+  ADD CONSTRAINT `user_ibfk_1` FOREIGN KEY (`faculty_id`) REFERENCES `faculty` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `user_ibfk_2` FOREIGN KEY (`group_id`) REFERENCES `group_list` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

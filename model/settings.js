@@ -6,12 +6,20 @@ function getGroups(connection, pseudo, course) {
 	return connection.query('SELECT gl.name FROM group_list as gl JOIN faculty as f ON gl.faculty_id=f.id WHERE gl.course='+course+' AND f.pseudo=\''+pseudo+'\'');
 }
 
-function insertUserData(connection, chat_id, pseudo, course, group) {
-	return connection.query('INSERT INTO `user` (chat_id, faculty, course, ugroup) VALUES('+chat_id+',\''+pseudo+'\','+course+',\''+group+'\')');
+function getFacultyId(connection, pseudo) {
+	return connection.query('SELECT id FROM faculty WHERE pseudo =\'' + pseudo + '\'')[0].id;
 }
 
-function updateUserData(connection, chat_id, pseudo, course, group) {
-	return connection.query('UPDATE user SET faculty=\''+pseudo+'\', course='+course+',ugroup=\''+group+'\' WHERE chat_id='+chat_id);
+function getGroupId(connection, name) {
+	return connection.query('SELECT id FROM group_list WHERE name =\'' + name + '\'')[0].id;
 }
 
-module.exports = {getCourses, getGroups, insertUserData, updateUserData};
+function insertUserData(connection, faculty_id, group_id, chat_id) {
+	return connection.query('INSERT INTO `user` (faculty_id, group_id, chat_id) VALUES(' + faculty_id + ',' + group_id + ',' + chat_id + ')');
+}
+
+function updateUserData(connection, faculty_id, group_id, chat_id) {
+	return connection.query('UPDATE user SET faculty_id=\'' + faculty_id + '\', group_id=\'' + group_id + '\' WHERE chat_id='+chat_id);
+}
+
+module.exports = {getCourses, getGroups, getFacultyId, getGroupId, insertUserData, updateUserData};

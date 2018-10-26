@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: localhost
--- Время создания: Окт 26 2018 г., 19:51
+-- Время создания: Окт 26 2018 г., 19:59
 -- Версия сервера: 5.7.22
 -- Версия PHP: 7.1.17
 
@@ -1091,6 +1091,14 @@ CREATE TABLE `user` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
+-- Дамп данных таблицы `user`
+--
+
+INSERT INTO `user` (`id`, `faculty_id`, `group_id`, `chat_id`) VALUES
+(7, 3, 6682, 324288533),
+(8, 3, 6682, 324288533);
+
+--
 -- Индексы сохранённых таблиц
 --
 
@@ -1112,8 +1120,8 @@ ALTER TABLE `group_list`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `faculty_id` (`faculty_id`),
-  ADD KEY `group_id` (`group_id`);
+  ADD KEY `faculty_id_fk` (`faculty_id`) USING BTREE,
+  ADD KEY `group_id_fk` (`group_id`) USING BTREE;
 
 --
 -- AUTO_INCREMENT для сохранённых таблиц
@@ -1135,7 +1143,7 @@ ALTER TABLE `group_list`
 -- AUTO_INCREMENT для таблицы `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Ограничения внешнего ключа сохраненных таблиц

@@ -34,47 +34,47 @@ let previous_msg = '';
 let current_msg = '';
 
 bot.on('message', function(msg) {
-	let chatId = msg.from.id;
+	let chat_id = msg.chat.id;
 	switch(msg.text) {
 		case commands.start: {
-			isNewUser = user_model.isNewUser(connection, chatId);
+			isNewUser = user_model.isNewUser(connection, chat_id);
 			if(isNewUser === true) {
-				bot.sendMessage(chatId, ...bot_actions.chooseFaculty());
+				bot.sendMessage(chat_id, ...bot_actions.chooseFaculty());
 			} else {
-				bot.sendMessage(chatId, ...bot_actions.doAction());
+				bot.sendMessage(chat_id, ...bot_actions.doAction());
 			}
 			break;
 		}
 		case commands.help: {
-			bot.sendMessage(chatId, 'Для начала работы с ботом введите команду /start');
+			bot.sendMessage(chat_id, 'Для начала работы с ботом введите команду /start');
 			break;
 		}
 		case commands.view_schedule: {
-			bot.sendMessage(chatId, ...bot_actions.getSchedule(msg));
+			bot.sendMessage(chat_id, ...bot_actions.getSchedule(msg));
 			break;
 		}
 		case commands.on_today: {
 			let groupOid = user_model.getUserGroupOid(connection, msg);
 			let schedule = schedule_getter.getTodaySchedule(groupOid);
-			bot.sendMessage(chatId, ...bot_actions.onTodaySchedule(schedule, msg));
+			bot.sendMessage(chat_id, ...bot_actions.onTodaySchedule(schedule, msg));
 			break;
 		}
 		case commands.on_tomorrow: {
 			let groupOid = user_model.getUserGroupOid(connection, msg);
 			let schedule = schedule_getter.getTomorrowSchedule(groupOid);
-			bot.sendMessage(chatId, ...bot_actions.onTomorrowSchedule(schedule, msg));
+			bot.sendMessage(chat_id, ...bot_actions.onTomorrowSchedule(schedule, msg));
 			break;
 		}
 		case commands.on_current_week: {
 			let groupOid = user_model.getUserGroupOid(connection, msg);
 			let schedule = schedule_getter.getCurWeekSchedule(groupOid);
-			bot.sendMessage(chatId, ...bot_actions.onCurWeekSchedule(schedule, msg));
+			bot.sendMessage(chat_id, ...bot_actions.onCurWeekSchedule(schedule, msg));
 			break;
 		}
 		case commands.on_next_week: {
 			let groupOid = user_model.getUserGroupOid(connection, msg);
 			let schedule = schedule_getter.getNextWeekSchedule(groupOid);
-			bot.sendMessage(chatId, ...bot_actions.onNextWeekSchedule(schedule, msg));
+			bot.sendMessage(chat_id, ...bot_actions.onNextWeekSchedule(schedule, msg));
 			break;
 		}
 		case commands.back: {
@@ -87,11 +87,11 @@ bot.on('message', function(msg) {
 			}
 			previous_msg = '';
 			current_msg = '';
-			bot.sendMessage(chatId, ...bot_actions.doAction());
+			bot.sendMessage(chat_id, ...bot_actions.doAction());
 			break;
 		}
 		case commands.settings: {
-			bot.sendMessage(chatId, ...bot_actions.getSettings(connection, msg));
+			bot.sendMessage(chat_id, ...bot_actions.getSettings(connection, msg));
 			break;
 		}
 		case commands.change_settings: {
@@ -104,7 +104,7 @@ bot.on('message', function(msg) {
 				edit_message_params = bot_actions.repeatChangeSettings(msg);
 				bot.editMessageText(...edit_message_params);
 			}
-			bot.sendMessage(chatId, ...bot_actions.changeSettings(msg));
+			bot.sendMessage(chat_id, ...bot_actions.changeSettings(msg));
 			break;
 		}
 		default: {
@@ -116,7 +116,7 @@ bot.on('message', function(msg) {
 			}
 			previous_msg = '';
 			current_msg = '';
-			bot.sendMessage(chatId, ...bot_actions.stub(msg));
+			bot.sendMessage(chat_id, ...bot_actions.stub(msg));
 			break;
 		}
 	}
@@ -129,10 +129,7 @@ bot.on('callback_query', function (callbackQuery) {
 	if(hasAction(keyboards.faculty_choose_frow, action)
 	|| hasAction(keyboards.faculty_choose_srow, action)
 	|| hasAction(keyboards.faculty_choose_trow, action)) {
-		user_data = [];
 		faculty_pseudo = action;
-		let faculty_id = settings_model.getFacultyId(connection, action);
-		user_data.push(faculty_id);
 		edit_message_params = bot_actions.chooseCourse(connection, msg, action);
 		bot.editMessageText(...edit_message_params);
 	}
@@ -154,13 +151,12 @@ bot.on('callback_query', function (callbackQuery) {
 	}
 
 	if(action === 'save') {
-		let chatId = msg.chat.id;
+		let chat_id = msg.chat.id;
 		if(isNewUser === true) {
 			if(settings_model.insertUserData(connection, ...user_data).affectedRows != 0) {
 				edit_message_params = bot_actions.saveSettings(true, msg);
 				bot.editMessageText(...edit_message_params);
-				let chatId = msg.chat.id;
-				bot.sendMessage(chatId, ...bot_actions.doAction());
+				bot.sendMessage(chat_id, ...bot_actions.doAction());
 				user_data = [];
 			} else {
 				edit_message_params = bot_actions.saveSettings(false, msg);
@@ -171,8 +167,7 @@ bot.on('callback_query', function (callbackQuery) {
 			if(settings_model.updateUserData(connection, ...user_data).affectedRows != 0) {
 				edit_message_params = bot_actions.saveSettings(true, msg);
 				bot.editMessageText(...edit_message_params);
-				let chatId = msg.chat.id;
-				bot.sendMessage(chatId, ...bot_actions.doAction());
+				bot.sendMessage(chat_id, ...bot_actions.doAction());
 				user_data = [];
 				current_msg = '';
 				previous_msg = '';

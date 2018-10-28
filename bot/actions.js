@@ -80,9 +80,9 @@ function saveQuestion(connection, msg, faculty_name, course, group) {
 }
 
 function getSettings(connection, msg) {
-	let user_settings = user_model.getUserData(connection, msg);
-	let user_faculty_name = user_model.getUserFacultyName(connection, user_settings.faculty_id);
-	let user_group_data = user_model.getUserGroupData(connection, user_settings.group_id);
+	let user_group_id = user_model.getUserGroupId(connection, msg);
+	let user_faculty_name = user_model.getUserFacultyName(connection, user_group_id);
+	let user_group_data = user_model.getUserGroupData(connection, user_group_id);
 
 	let text = `Ваши текущие параметры:\nФакультет: ${user_faculty_name}\nКурс: ${user_group_data.course}\nГруппа: ${user_group_data.name}\nЧто вы хотите сделать далее?`;
 

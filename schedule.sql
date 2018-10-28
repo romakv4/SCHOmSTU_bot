@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: localhost
--- Время создания: Окт 28 2018 г., 18:03
+-- Время создания: Окт 28 2018 г., 19:54
 -- Версия сервера: 5.7.22
 -- Версия PHP: 7.1.17
 
@@ -63,14 +63,14 @@ CREATE TABLE `group_list` (
   `faculty_id` int(11) NOT NULL,
   `course` int(11) NOT NULL,
   `name` varchar(40) NOT NULL,
-  `groupOid` int(11) NOT NULL
+  `group_oid` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Дамп данных таблицы `group_list`
 --
 
-INSERT INTO `group_list` (`id`, `faculty_id`, `course`, `name`, `groupOid`) VALUES
+INSERT INTO `group_list` (`id`, `faculty_id`, `course`, `name`, `group_oid`) VALUES
 (6272, 1, 1, 'ВГМУ-181', 1856),
 (6273, 1, 1, 'ВД-181', 1862),
 (6274, 1, 1, 'ВСР-181', 1889),
@@ -1133,7 +1133,7 @@ ALTER TABLE `group_list`
 -- AUTO_INCREMENT для таблицы `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Ограничения внешнего ключа сохраненных таблиц

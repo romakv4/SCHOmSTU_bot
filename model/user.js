@@ -15,7 +15,7 @@ function getUserGroupData(connection, groupId) {
 }
 
 function getUserGroupOid(connection, msg) {
-	return connection.query('SELECT gl.groupOid FROM group_list as gl JOIN user as u ON gl.id = u.group_id WHERE u.chat_id =' + msg.chat.id)[0].groupOid;
+	return connection.query('SELECT gl.group_oid FROM group_list as gl JOIN user as u ON gl.id = u.group_id WHERE u.chat_id =' + msg.chat.id)[0].group_oid;
 }
 
 module.exports = {isNewUser, getUserGroupId, getUserFacultyName, getUserGroupData, getUserGroupOid}

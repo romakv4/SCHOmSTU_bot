@@ -6,10 +6,10 @@ function getTodaySchedule(groupOid) {
 	let type = 'on_today';
 	let today = moment();
 	let tomorrow = moment().add(1, 'days');
-	let schedule = cacher.getScheduleFromCache(groupOid, type, cacher.schedule_cache);
+	let schedule = cacher.getScheduleFromCache(groupOid, type, cacher.scheduleCache);
 	if (schedule === null) {
 		schedule = parsing.getScheduleFromResponse(groupOid, type, today, tomorrow);
-    cacher.scheduleCacher(groupOid, type, cacher.schedule_cache, schedule);
+    cacher.scheduleCacher(groupOid, type, cacher.scheduleCache, schedule);
 	}
 	return schedule;
 }
@@ -18,10 +18,10 @@ function getTomorrowSchedule(groupOid) {
 	let type = 'on_tomorrow';
 	let tomorrow = moment().add(1, 'days');
 	let afterTomorrow = moment().add(2, 'days');
-	let schedule = cacher.getScheduleFromCache(groupOid, type, cacher.schedule_cache);
+	let schedule = cacher.getScheduleFromCache(groupOid, type, cacher.scheduleCache);
 	if (schedule === null) {
 		schedule = parsing.getScheduleFromResponse(groupOid, type, tomorrow, afterTomorrow);
-    cacher.scheduleCacher(groupOid, type, cacher.schedule_cache, schedule);
+    cacher.scheduleCacher(groupOid, type, cacher.scheduleCache, schedule);
 	}
 	return schedule;
 }
@@ -38,10 +38,10 @@ function getCurWeekSchedule(groupOid) {
 		weekStart = moment().startOf('week').add(1, 'days');
 		weekEnd = moment().endOf('week').add(1, 'days');
 	}
-	let schedule = cacher.getScheduleFromCache(groupOid, type, cacher.schedule_cache);
+	let schedule = cacher.getScheduleFromCache(groupOid, type, cacher.scheduleCache);
   if (schedule === null) {
 		schedule = parsing.getScheduleFromResponse(groupOid, type, weekStart, weekEnd);
-    cacher.scheduleCacher(groupOid, type, cacher.schedule_cache, schedule);
+    cacher.scheduleCacher(groupOid, type, cacher.scheduleCache, schedule);
 	}
 	return schedule;
 }
@@ -58,10 +58,10 @@ function getNextWeekSchedule(groupOid) {
 		weekStart = moment().endOf('week').add(2,'days');
 		weekEnd = moment().endOf('week').add(8,'days');
 	}
-	let schedule = cacher.getScheduleFromCache(groupOid, type, cacher.schedule_cache);
+	let schedule = cacher.getScheduleFromCache(groupOid, type, cacher.scheduleCache);
 	if (schedule === null) {
 		schedule = parsing.getScheduleFromResponse(groupOid, type, weekStart, weekEnd);
-    cacher.scheduleCacher(groupOid, type, cacher.schedule_cache, schedule);
+    cacher.scheduleCacher(groupOid, type, cacher.scheduleCache, schedule);
 	}
 	return schedule;
 }

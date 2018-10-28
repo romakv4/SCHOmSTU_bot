@@ -21,102 +21,102 @@ let bot = new TelegramBot(token, {
 
 let commands = bot_commands.commands;
 
-let faculty_pseudo;
+let facultyPseudo;
 let course;
 let group;
 
-let edit_message_params;
+let editMessageParams;
 
 let isNewUser;
-let user_data = [];
+let userData = [];
 
-let previous_msg = '';
-let current_msg = '';
+let previousMsg = '';
+let currentMsg = '';
 
 bot.on('message', function(msg) {
-	let chat_id = msg.chat.id;
+	let chatId = msg.chat.id;
 	switch(msg.text) {
 		case commands.start: {
-			isNewUser = user_model.isNewUser(connection, chat_id);
+			isNewUser = user_model.isNewUser(connection, chatId);
 			if(isNewUser === true) {
-				bot.sendMessage(chat_id, ...bot_actions.chooseFaculty());
+				bot.sendMessage(chatId, ...bot_actions.chooseFaculty());
 			} else {
-				bot.sendMessage(chat_id, ...bot_actions.doAction());
+				bot.sendMessage(chatId, ...bot_actions.doAction());
 			}
 			break;
 		}
 		case commands.help: {
-			bot.sendMessage(chat_id, 'Для начала работы с ботом введите команду /start');
+			bot.sendMessage(chatId, 'Для начала работы с ботом введите команду /start');
 			break;
 		}
-		case commands.view_schedule: {
-			bot.sendMessage(chat_id, ...bot_actions.getSchedule(msg));
+		case commands.viewSchedule: {
+			bot.sendMessage(chatId, ...bot_actions.getSchedule(msg));
 			break;
 		}
-		case commands.on_today: {
+		case commands.onToday: {
 			let groupOid = user_model.getUserGroupOid(connection, msg);
 			let schedule = schedule_getter.getTodaySchedule(groupOid);
-			bot.sendMessage(chat_id, ...bot_actions.onTodaySchedule(schedule, msg));
+			bot.sendMessage(chatId, ...bot_actions.onTodaySchedule(schedule, msg));
 			break;
 		}
-		case commands.on_tomorrow: {
+		case commands.onTomorrow: {
 			let groupOid = user_model.getUserGroupOid(connection, msg);
 			let schedule = schedule_getter.getTomorrowSchedule(groupOid);
-			bot.sendMessage(chat_id, ...bot_actions.onTomorrowSchedule(schedule, msg));
+			bot.sendMessage(chatId, ...bot_actions.onTomorrowSchedule(schedule, msg));
 			break;
 		}
-		case commands.on_current_week: {
+		case commands.onCurrentWeek: {
 			let groupOid = user_model.getUserGroupOid(connection, msg);
 			let schedule = schedule_getter.getCurWeekSchedule(groupOid);
-			bot.sendMessage(chat_id, ...bot_actions.onCurWeekSchedule(schedule, msg));
+			bot.sendMessage(chatId, ...bot_actions.onCurWeekSchedule(schedule, msg));
 			break;
 		}
-		case commands.on_next_week: {
+		case commands.onNextWeek: {
 			let groupOid = user_model.getUserGroupOid(connection, msg);
 			let schedule = schedule_getter.getNextWeekSchedule(groupOid);
-			bot.sendMessage(chat_id, ...bot_actions.onNextWeekSchedule(schedule, msg));
+			bot.sendMessage(chatId, ...bot_actions.onNextWeekSchedule(schedule, msg));
 			break;
 		}
 		case commands.back: {
-			previous_msg = current_msg;
-			current_msg = msg.text;
-			if(previous_msg === '🛠 Изменение настроек' && current_msg === '🔙 Назад') {
-				user_data = [];
-				edit_message_params = bot_actions.repeatChangeSettings(msg);
-				bot.editMessageText(...edit_message_params);
+			previousMsg = currentMsg;
+			currentMsg = msg.text;
+			if(previousMsg === '🛠 Изменение настроек' && currentMsg === '🔙 Назад') {
+				userData = [];
+				editMessageParams = bot_actions.repeatChangeSettings(msg);
+				bot.editMessageText(...editMessageParams);
 			}
-			previous_msg = '';
-			current_msg = '';
-			bot.sendMessage(chat_id, ...bot_actions.doAction());
+			previousMsg = '';
+			currentMsg = '';
+			bot.sendMessage(chatId, ...bot_actions.doAction());
 			break;
 		}
 		case commands.settings: {
-			bot.sendMessage(chat_id, ...bot_actions.getSettings(connection, msg));
+			bot.sendMessage(chatId, ...bot_actions.getSettings(connection, msg));
 			break;
 		}
-		case commands.change_settings: {
-			if(current_msg === '') {
-				current_msg += msg.text;
+		case commands.changeSettings: {
+			if(currentMsg === '') {
+				currentMsg += msg.text;
 			} else {
-				previous_msg = current_msg;
+				previousMsg = currentMsg;
 			}
-			if(current_msg === previous_msg) {
-				edit_message_params = bot_actions.repeatChangeSettings(msg);
-				bot.editMessageText(...edit_message_params);
+			if(currentMsg === previousMsg) {
+				editMessageParams = bot_actions.repeatChangeSettings(msg);
+				bot.editMessageText(...editMessageParams);
 			}
-			bot.sendMessage(chat_id, ...bot_actions.changeSettings(msg));
+			bot.sendMessage(chatId, ...bot_actions.changeSettings(msg));
 			break;
 		}
 		default: {
-			previous_msg = current_msg;
-			current_msg = msg.text;
-			if(previous_msg === '🛠 Изменение настроек' && Object.values(commands).indexOf(current_msg) === -1) {
-				edit_message_params = bot_actions.repeatChangeSettings(msg);
-				bot.editMessageText(...edit_message_params);
+			previousMsg = currentMsg;
+			currentMsg = msg.text;
+			if(previousMsg === '🛠 Изменение настроек' && Object.values(commands).indexOf(currentMsg) === -1) {
+				editMessageParams = bot_actions.repeatChangeSettings(msg);
+				bot.editMessageText(...editMessageParams);
 			}
-			previous_msg = '';
-			current_msg = '';
-			bot.sendMessage(chat_id, ...bot_actions.stub(msg));
+			previousMsg = '';
+			currentMsg = '';
+			bot.sendMessage(chatId, ...bot_actions.stub(msg));
 			break;
 		}
 	}
@@ -126,62 +126,62 @@ bot.on('callback_query', function (callbackQuery) {
 	const action = callbackQuery.data;
 	const msg = callbackQuery.message;
 	//user settings
-	if(hasAction(keyboards.faculty_choose_frow, action)
-	|| hasAction(keyboards.faculty_choose_srow, action)
-	|| hasAction(keyboards.faculty_choose_trow, action)) {
-		faculty_pseudo = action;
-		edit_message_params = bot_actions.chooseCourse(connection, msg, action);
-		bot.editMessageText(...edit_message_params);
+	if(hasAction(keyboards.facultyChooseFirstRow, action)
+	|| hasAction(keyboards.facultyChooseSecondRow, action)
+	|| hasAction(keyboards.facultyChooseThirdRow, action)) {
+		facultyPseudo = action;
+		editMessageParams = bot_actions.chooseCourse(connection, msg, action);
+		bot.editMessageText(...editMessageParams);
 	}
 
-	if(faculty_pseudo != undefined && hasAction(keyboards.getCourseKeyboard(connection, faculty_pseudo), action)) {
+	if(facultyPseudo != undefined && hasAction(keyboards.getCourseKeyboard(connection, facultyPseudo), action)) {
 		course = action;
-		edit_message_params = bot_actions.chooseGroup(connection, msg, faculty_pseudo, course);
-		bot.editMessageText(...edit_message_params);
+		editMessageParams = bot_actions.chooseGroup(connection, msg, facultyPseudo, course);
+		bot.editMessageText(...editMessageParams);
 	}
 
-	if(faculty_pseudo != undefined && course != undefined && hasAction(keyboards.getGroupKeyboard(connection, faculty_pseudo, course), action)) {
+	if(facultyPseudo != undefined && course != undefined && hasAction(keyboards.getGroupKeyboard(connection, facultyPseudo, course), action)) {
 		group = action;
 		let group_id = settings_model.getGroupId(connection, action);
-		user_data.push(group_id);
-		user_data.push(msg.chat.id);
-		let faculty_name = user_model.getUserFacultyName(connection, user_data[0]);
-		edit_message_params = bot_actions.saveQuestion(connection, msg, faculty_name, course, group);
-		bot.editMessageText(...edit_message_params);
+		userData.push(group_id);
+		userData.push(msg.chat.id);
+		let facultyName = user_model.getUserFacultyName(connection, userData[0]);
+		editMessageParams = bot_actions.saveQuestion(connection, msg, facultyName, course, group);
+		bot.editMessageText(...editMessageParams);
 	}
 
 	if(action === 'save') {
-		let chat_id = msg.chat.id;
+		let chatId = msg.chat.id;
 		if(isNewUser === true) {
-			if(settings_model.insertUserData(connection, ...user_data).affectedRows != 0) {
-				edit_message_params = bot_actions.saveSettings(true, msg);
-				bot.editMessageText(...edit_message_params);
-				bot.sendMessage(chat_id, ...bot_actions.doAction());
-				user_data = [];
+			if(settings_model.insertUserData(connection, ...userData).affectedRows != 0) {
+				editMessageParams = bot_actions.saveSettings(true, msg);
+				bot.editMessageText(...editMessageParams);
+				bot.sendMessage(chatId, ...bot_actions.doAction());
+				userData = [];
 			} else {
-				edit_message_params = bot_actions.saveSettings(false, msg);
-				user_data = [];
-				bot.editMessageText(...edit_message_params);
+				editMessageParams = bot_actions.saveSettings(false, msg);
+				userData = [];
+				bot.editMessageText(...editMessageParams);
 			}
 		} else {
-			if(settings_model.updateUserData(connection, ...user_data).affectedRows != 0) {
-				edit_message_params = bot_actions.saveSettings(true, msg);
-				bot.editMessageText(...edit_message_params);
-				bot.sendMessage(chat_id, ...bot_actions.doAction());
-				user_data = [];
-				current_msg = '';
-				previous_msg = '';
+			if(settings_model.updateUserData(connection, ...userData).affectedRows != 0) {
+				editMessageParams = bot_actions.saveSettings(true, msg);
+				bot.editMessageText(...editMessageParams);
+				bot.sendMessage(chatId, ...bot_actions.doAction());
+				userData = [];
+				currentMsg = '';
+				previousMsg = '';
 			} else {
-				edit_message_params = bot_actions.saveSettings(false, msg);
-				user_data = [];
-				bot.editMessageText(...edit_message_params);
+				editMessageParams = bot_actions.saveSettings(false, msg);
+				userData = [];
+				bot.editMessageText(...editMessageParams);
 			}
 		}
 	}
 
 	if(action === '!save') {
-		edit_message_params = bot_actions.changeSettings(msg);
-		bot.editMessageText(...edit_message_params);
+		editMessageParams = bot_actions.changeSettings(msg);
+		bot.editMessageText(...editMessageParams);
 	}
 });
 
@@ -197,10 +197,10 @@ function hasAction(array, action) {
 
 //Utilite method for debugging. Dont use in the bot.
 function strToHex(str) {
-	var hex_arr = [];
+	var hexArr = [];
 	for (var n = 0, l = str.length; n < l; n ++) {
 		var hex = Number(str.charCodeAt(n)).toString(16);
-		hex_arr.push(hex);
+		hexArr.push(hex);
 	}
-	return hex_arr.join('');
+	return hexArr.join('');
 }

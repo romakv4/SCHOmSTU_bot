@@ -5,7 +5,7 @@ function stub() {
 	let text = 'Извините, я не умею работать с произвольными сообщениями... Выберите одну из категорий, представленных на клавиатуре.';
 	let opts = {
 		reply_markup: {
-			keyboard: keyboards.user_keyboard
+			keyboard: keyboards.userKeyboard
 		}
 	}
 	return [text, opts];
@@ -15,7 +15,7 @@ function doAction() {
 	let text = 'Выберите категорию.';
 	let opts = {
 		reply_markup: {
-			keyboard: keyboards.user_keyboard
+			keyboard: keyboards.userKeyboard
 		}
 	}
 	return [text, opts];
@@ -27,7 +27,7 @@ function getSchedule(msg) {
 		chat_id: msg.chat.id,
 		message_id: msg.message_id,
 		reply_markup: {
-			keyboard: keyboards.schedule_keyboard
+			keyboard: keyboards.scheduleKeyboard
 		}
 	}
 	return [text, opts];
@@ -37,59 +37,59 @@ function chooseFaculty() {
 	let text = 'Приветствую! Укажите свой факультет.';
 	let opts = {
 		reply_markup: {
-			inline_keyboard: [keyboards.faculty_choose_frow, keyboards.faculty_choose_srow, keyboards.faculty_choose_trow]
+			inline_keyboard: [keyboards.facultyChooseFirstRow, keyboards.facultyChooseSecondRow, keyboards.facultyChooseThirdRow]
 		}
 	}
 	return [text, opts];
 }
 
-function chooseCourse(connection, msg, faculty_pseudo) {
+function chooseCourse(connection, msg, facultyPseudo) {
 	let text = 'Отлично! Выберите курс.'
 	let opts = {
 		chat_id: msg.chat.id,
 		message_id: msg.message_id,
 		reply_markup: {
-			inline_keyboard: keyboards.getCourseKeyboard(connection, faculty_pseudo)
+			inline_keyboard: keyboards.getCourseKeyboard(connection, facultyPseudo)
 		}
 	}
 	return [text, opts];
 }
 
-function chooseGroup(connection, msg, faculty_pseudo, course) {
+function chooseGroup(connection, msg, facultyPseudo, course) {
 	let text = 'Супер! Осталось выбрать группу.';
 	let opts = {
 		chat_id: msg.chat.id,
 		message_id: msg.message_id,
 		reply_markup: {
-			inline_keyboard: keyboards.getGroupKeyboard(connection, faculty_pseudo, course)
+			inline_keyboard: keyboards.getGroupKeyboard(connection, facultyPseudo, course)
 		}
 	}
 	return [text, opts];
 }
 
-function saveQuestion(connection, msg, faculty_name, course, group) {
-	let text = 'Настройка завершена. Новые параметры:\nФакультет: ' +faculty_name+ '\nКурс: ' +course+ '\nГруппа: ' +group+ '\nСохранить установленные параметры?';
+function saveQuestion(connection, msg, facultyName, course, group) {
+	let text = 'Настройка завершена. Новые параметры:\nФакультет: ' +facultyName+ '\nКурс: ' +course+ '\nГруппа: ' +group+ '\nСохранить установленные параметры?';
 	let opts = {
 		chat_id: msg.chat.id,
 		message_id: msg.message_id,
 		reply_markup: {
-			inline_keyboard: keyboards.save_keyboard
+			inline_keyboard: keyboards.saveKeyboard
 		}
 	}
 	return [text, opts];
 }
 
 function getSettings(connection, msg) {
-	let user_group_id = user_model.getUserGroupId(connection, msg);
-	let user_faculty_name = user_model.getUserFacultyName(connection, user_group_id);
-	let user_group_data = user_model.getUserGroupData(connection, user_group_id);
+	let userGroupId = user_model.getUserGroupId(connection, msg);
+	let userFacultyName = user_model.getUserFacultyName(connection, userGroupId);
+	let userGroupData = user_model.getUserGroupData(connection, userGroupId);
 
-	let text = `Ваши текущие параметры:\nФакультет: ${user_faculty_name}\nКурс: ${user_group_data.course}\nГруппа: ${user_group_data.name}\nЧто вы хотите сделать далее?`;
+	let text = `Ваши текущие параметры:\nФакультет: ${userFacultyName}\nКурс: ${userGroupData.course}\nГруппа: ${userGroupData.name}\nЧто вы хотите сделать далее?`;
 
 	let opts = {
 		chat_id: msg.chat.id,
 		reply_markup: {
-			keyboard: keyboards.user_keyboard_for_settings
+			keyboard: keyboards.userSettingsKeyboard
 		}
 	}
 	return [text, opts];
@@ -109,7 +109,7 @@ function saveSettings(success, msg) {
 			chat_id: msg.chat.id,
 			message_id: msg.message_id,
 			reply_markup: {
-				inline_keyboard: [keyboards.faculty_choose_frow, keyboards.faculty_choose_srow, keyboards.faculty_choose_trow]
+				inline_keyboard: [keyboards.facultyChooseFirstrow, keyboards.facultyChooseSecondRow, keyboards.facultyChooseThirdRow]
 			}
 		}
 	return [text, opts];
@@ -122,7 +122,7 @@ function changeSettings(msg) {
 		chat_id: msg.chat.id,
 		message_id: msg.message_id,
 		reply_markup: {
-			inline_keyboard: [keyboards.faculty_choose_frow, keyboards.faculty_choose_srow, keyboards.faculty_choose_trow]
+			inline_keyboard: [keyboards.facultyChooseFirstRow, keyboards.facultyChooseSecondRow, keyboards.facultyChooseThirdRow]
 		}
 	}
 	return [text, opts];
@@ -177,7 +177,7 @@ function getScheduleMsgOpts(msg) {
 		chat_id: msg.chat.id,
 		parse_mode: "Markdown",
 		reply_markup: {
-			keyboard: keyboards.schedule_keyboard
+			keyboard: keyboards.scheduleKeyboard
 		}
 	}
 	return opts;

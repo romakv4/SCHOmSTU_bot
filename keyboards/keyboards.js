@@ -1,6 +1,6 @@
 const settings_model = require('../model/settings.js');
 
-let faculty_choose_frow =
+let facultyChooseFirstRow =
 		[
 			{
 				text: 'ФГО',
@@ -27,7 +27,7 @@ let faculty_choose_frow =
 				callback_data: 'eni'
 			}
 		];
-let faculty_choose_srow =
+let facultyChooseSecondRow =
 		[
 			{
 				text: 'ФИТиКС',
@@ -46,7 +46,7 @@ let faculty_choose_srow =
 				callback_data: 'feoim'
 			}
 		];
-let faculty_choose_trow =
+let facultyChooseThirdRow =
 		[
 			{
 				text: 'Заочного обучения',
@@ -61,23 +61,23 @@ let faculty_choose_trow =
 function getCourseKeyboard(connection, pseudo) {
 	let courses = settings_model.getCourses(connection, pseudo);
 	let count = courses.length;
-	let course_choose_keyboard = [];
+	let courseChooseKeyboard = [];
 	for(let i = 0; i < count; i++) {
-		course_choose_keyboard.push({text:courses[i].course, callback_data:String(courses[i].course)});
+		courseChooseKeyboard.push({text:courses[i].course, callback_data:String(courses[i].course)});
 	}
-	return [course_choose_keyboard];
+	return [courseChooseKeyboard];
 }
 
 function getGroupKeyboard(connection, pseudo, course) {
 	let gr = settings_model.getGroups(connection, pseudo, course);
-	let group_choose_keyboard = [];
+	let groupChooseKeyboard = [];
 	for (let i = 0; i < gr.length; i++) {
-		group_choose_keyboard.push([{text:gr[i].name, callback_data:gr[i].name}]);
+		groupChooseKeyboard.push([{text:gr[i].name, callback_data:gr[i].name}]);
 	}
-	return group_choose_keyboard;
+	return groupChooseKeyboard;
 }
 
-let save_keyboard =
+let saveKeyboard =
 	[
 		[
 			{
@@ -91,7 +91,7 @@ let save_keyboard =
 		]
 	];
 
-let user_keyboard =
+let userKeyboard =
 	[
 		[
 			{
@@ -105,7 +105,7 @@ let user_keyboard =
 		]
 	];
 
-	let user_keyboard_for_settings =
+	let userSettingsKeyboard =
 		[
 			[
 				{
@@ -119,7 +119,7 @@ let user_keyboard =
 			]
 		];
 
-let schedule_keyboard =
+let scheduleKeyboard =
 	[
 		[
 			{
@@ -144,6 +144,6 @@ let schedule_keyboard =
 		]
 	];
 
-module.exports = {faculty_choose_frow, faculty_choose_srow, faculty_choose_trow,
-					getCourseKeyboard, getGroupKeyboard, save_keyboard,
-					user_keyboard, user_keyboard_for_settings, schedule_keyboard};
+module.exports = {facultyChooseFirstRow, facultyChooseSecondRow, facultyChooseThirdRow,
+					getCourseKeyboard, getGroupKeyboard, saveKeyboard,
+					userKeyboard, userSettingsKeyboard, scheduleKeyboard};

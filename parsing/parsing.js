@@ -22,9 +22,9 @@ function getScheduleFromResponse(groupOid, type, dateFrom, dateTo) {
 	let days = $('table');
 	let schedule = [];
 	for(let i = 0; i < days.length; i++) {
-		let day_date = $(days[i]).children('thead').children('tr').children('td').text().replace(/\n */, ' ');
-		let day = day_date.replace(/[0-9,.\s]+/i, '');
-		let date = day_date.replace(/[а-яё,\s]+/i, '');
+		let dayDate = $(days[i]).children('thead').children('tr').children('td').text().replace(/\n */, ' ');
+		let day = dayDate.replace(/[0-9,.\s]+/i, '');
+		let date = dayDate.replace(/[а-яё,\s]+/i, '');
 		let pairs = $(days[i]).children('tbody');
 		let subjects = [];
 		for(let j = 0; j < pairs.length; j++) {

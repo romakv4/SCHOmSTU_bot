@@ -1,15 +1,15 @@
-let schedule_cache = [];
+let scheduleCache = [];
 
-function scheduleCacher(groupOid, type, shcedule_cache, schedule) {
-	if(schedule_cache.length === 0) {
-		schedule_cache.push({
+function scheduleCacher(groupOid, type, scheduleCache, schedule) {
+	if(scheduleCache.length === 0) {
+		scheduleCache.push({
 			groupOid: groupOid,
 			type: type,
 			add_time: new Date().getTime(),
 			schedule: schedule});
 	} else {
-		if(schedule_cache.some(elem => JSON.stringify(elem.schedule) === JSON.stringify(schedule)) === false) {
-			schedule_cache.push({
+		if(scheduleCache.some(elem => JSON.stringify(elem.schedule) === JSON.stringify(schedule)) === false) {
+			scheduleCache.push({
         groupOid: groupOid,
 				type: type,
 				add_time: new Date().getTime(),
@@ -18,12 +18,12 @@ function scheduleCacher(groupOid, type, shcedule_cache, schedule) {
 	}
 }
 
-function getScheduleFromCache(groupOid, type, schedule_cache) {
+function getScheduleFromCache(groupOid, type, scheduleCache) {
 	let result;
-	if(schedule_cache.length === 0) {
+	if(scheduleCache.length === 0) {
 		result = null;
 	} else {
-		schedule_cache.some(elem => {
+		scheduleCache.some(elem => {
 			if(elem.groupOid === groupOid && elem.type === type) {
 				result = elem.schedule;
 			} else {
@@ -35,7 +35,7 @@ function getScheduleFromCache(groupOid, type, schedule_cache) {
 }
 
 setInterval(function() {
-	schedule_cache = schedule_cache.filter(elem => {
+	scheduleCache = scheduleCache.filter(elem => {
 		if((new Date().getTime() - elem.add_time) >= (1000 * 60 * 10)) {
 			return false;
 		}
@@ -43,4 +43,4 @@ setInterval(function() {
 	});
 }, 1000 * 60 * 5);
 
-module.exports = {schedule_cache, scheduleCacher, getScheduleFromCache}
+module.exports = {scheduleCache, scheduleCacher, getScheduleFromCache}

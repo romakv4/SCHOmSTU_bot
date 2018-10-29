@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: localhost
--- Время создания: Окт 28 2018 г., 19:54
+-- Время создания: Окт 29 2018 г., 20:35
 -- Версия сервера: 5.7.22
 -- Версия PHP: 7.1.17
 
@@ -31,14 +31,14 @@ SET time_zone = "+00:00";
 CREATE TABLE `faculty` (
   `id` int(11) NOT NULL,
   `name` varchar(60) NOT NULL,
-  `pseudo` varchar(10) NOT NULL
+  `alias` varchar(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Дамп данных таблицы `faculty`
 --
 
-INSERT INTO `faculty` (`id`, `name`, `pseudo`) VALUES
+INSERT INTO `faculty` (`id`, `name`, `alias`) VALUES
 (1, 'Гуманитарного образования', 'fgo'),
 (2, 'Заочного обучения', 'zaoch'),
 (3, 'Информационных технологий и компьютерных систем', 'fitiks'),
@@ -55,10 +55,10 @@ INSERT INTO `faculty` (`id`, `name`, `pseudo`) VALUES
 -- --------------------------------------------------------
 
 --
--- Структура таблицы `group_list`
+-- Структура таблицы `group`
 --
 
-CREATE TABLE `group_list` (
+CREATE TABLE `group` (
   `id` int(11) NOT NULL,
   `faculty_id` int(11) NOT NULL,
   `course` int(11) NOT NULL,
@@ -67,10 +67,10 @@ CREATE TABLE `group_list` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Дамп данных таблицы `group_list`
+-- Дамп данных таблицы `group`
 --
 
-INSERT INTO `group_list` (`id`, `faculty_id`, `course`, `name`, `group_oid`) VALUES
+INSERT INTO `group` (`id`, `faculty_id`, `course`, `name`, `group_oid`) VALUES
 (6272, 1, 1, 'ВГМУ-181', 1856),
 (6273, 1, 1, 'ВД-181', 1862),
 (6274, 1, 1, 'ВСР-181', 1889),
@@ -1100,9 +1100,9 @@ ALTER TABLE `faculty`
   ADD PRIMARY KEY (`id`);
 
 --
--- Индексы таблицы `group_list`
+-- Индексы таблицы `group`
 --
-ALTER TABLE `group_list`
+ALTER TABLE `group`
   ADD PRIMARY KEY (`id`),
   ADD KEY `faculty_id_fk` (`faculty_id`);
 
@@ -1124,32 +1124,32 @@ ALTER TABLE `faculty`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
--- AUTO_INCREMENT для таблицы `group_list`
+-- AUTO_INCREMENT для таблицы `group`
 --
-ALTER TABLE `group_list`
+ALTER TABLE `group`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7277;
 
 --
 -- AUTO_INCREMENT для таблицы `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Ограничения внешнего ключа сохраненных таблиц
 --
 
 --
--- Ограничения внешнего ключа таблицы `group_list`
+-- Ограничения внешнего ключа таблицы `group`
 --
-ALTER TABLE `group_list`
+ALTER TABLE `group`
   ADD CONSTRAINT `faculty_id_fk` FOREIGN KEY (`faculty_id`) REFERENCES `faculty` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Ограничения внешнего ключа таблицы `user`
 --
 ALTER TABLE `user`
-  ADD CONSTRAINT `group_id_fk` FOREIGN KEY (`group_id`) REFERENCES `group_list` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+  ADD CONSTRAINT `group_id_fk` FOREIGN KEY (`group_id`) REFERENCES `group` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

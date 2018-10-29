@@ -43,25 +43,25 @@ function chooseFaculty() {
 	return [text, opts];
 }
 
-function chooseCourse(connection, msg, facultyPseudo) {
+function chooseCourse(connection, msg, facultyAlias) {
 	let text = 'Отлично! Выберите курс.'
 	let opts = {
 		chat_id: msg.chat.id,
 		message_id: msg.message_id,
 		reply_markup: {
-			inline_keyboard: keyboards.getCourseKeyboard(connection, facultyPseudo)
+			inline_keyboard: keyboards.getCourseKeyboard(connection, facultyAlias)
 		}
 	}
 	return [text, opts];
 }
 
-function chooseGroup(connection, msg, facultyPseudo, course) {
+function chooseGroup(connection, msg, facultyAlias, course) {
 	let text = 'Супер! Осталось выбрать группу.';
 	let opts = {
 		chat_id: msg.chat.id,
 		message_id: msg.message_id,
 		reply_markup: {
-			inline_keyboard: keyboards.getGroupKeyboard(connection, facultyPseudo, course)
+			inline_keyboard: keyboards.getGroupKeyboard(connection, facultyAlias, course)
 		}
 	}
 	return [text, opts];

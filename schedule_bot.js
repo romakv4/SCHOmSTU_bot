@@ -21,7 +21,7 @@ let bot = new TelegramBot(token, {
 
 let commands = bot_commands.commands;
 
-let facultyPseudo;
+let facultyAlias;
 let course;
 let group;
 
@@ -129,18 +129,18 @@ bot.on('callback_query', function (callbackQuery) {
 	if(hasAction(keyboards.facultyChooseFirstRow, action)
 	|| hasAction(keyboards.facultyChooseSecondRow, action)
 	|| hasAction(keyboards.facultyChooseThirdRow, action)) {
-		facultyPseudo = action;
+		facultyAlias = action;
 		editMessageParams = bot_actions.chooseCourse(connection, msg, action);
 		bot.editMessageText(...editMessageParams);
 	}
 
-	if(facultyPseudo != undefined && hasAction(keyboards.getCourseKeyboard(connection, facultyPseudo), action)) {
+	if(facultyAlias != undefined && hasAction(keyboards.getCourseKeyboard(connection, facultyAlias), action)) {
 		course = action;
-		editMessageParams = bot_actions.chooseGroup(connection, msg, facultyPseudo, course);
+		editMessageParams = bot_actions.chooseGroup(connection, msg, facultyAlias, course);
 		bot.editMessageText(...editMessageParams);
 	}
 
-	if(facultyPseudo != undefined && course != undefined && hasAction(keyboards.getGroupKeyboard(connection, facultyPseudo, course), action)) {
+	if(facultyAlias != undefined && course != undefined && hasAction(keyboards.getGroupKeyboard(connection, facultyAlias, course), action)) {
 		group = action;
 		let group_id = settings_model.getGroupId(connection, action);
 		userData.push(group_id);

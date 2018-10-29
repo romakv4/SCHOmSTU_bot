@@ -58,8 +58,8 @@ let facultyChooseThirdRow =
 			}
 		];
 
-function getCourseKeyboard(connection, pseudo) {
-	let courses = settings_model.getCourses(connection, pseudo);
+function getCourseKeyboard(connection, facultyAlias) {
+	let courses = settings_model.getCourses(connection, facultyAlias);
 	let count = courses.length;
 	let courseChooseKeyboard = [];
 	for(let i = 0; i < count; i++) {
@@ -68,8 +68,8 @@ function getCourseKeyboard(connection, pseudo) {
 	return [courseChooseKeyboard];
 }
 
-function getGroupKeyboard(connection, pseudo, course) {
-	let gr = settings_model.getGroups(connection, pseudo, course);
+function getGroupKeyboard(connection, facultyAlias, course) {
+	let gr = settings_model.getGroups(connection, facultyAlias, course);
 	let groupChooseKeyboard = [];
 	for (let i = 0; i < gr.length; i++) {
 		groupChooseKeyboard.push([{text:gr[i].name, callback_data:gr[i].name}]);

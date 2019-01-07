@@ -1,5 +1,5 @@
 const keyboards = require('../keyboards/keyboards.js'),
-		user_model = require('../model/user');
+	user_model = require('../model/user.js');
 
 function stub() {
 	let text = 'Извините, я не умею работать с произвольными сообщениями... Выберите одну из категорий, представленных на клавиатуре.';
@@ -184,5 +184,5 @@ function getScheduleMsgOpts(msg) {
 }
 
 module.exports = {stub, doAction, getSchedule, getSettings,
-					chooseFaculty, chooseCourse, chooseGroup, saveQuestion, saveSettings, changeSettings, repeatChangeSettings,
-					onTodaySchedule, onTomorrowSchedule, onCurWeekSchedule, onNextWeekSchedule};
+		chooseFaculty, chooseCourse, chooseGroup, saveQuestion, saveSettings, changeSettings, repeatChangeSettings,
+		onTodaySchedule, onTomorrowSchedule, onCurWeekSchedule, onNextWeekSchedule}

@@ -1,4 +1,4 @@
-let commands = {
+const commands = {
   start: '/start',
   help: '/help',
   viewSchedule: '📅 Просмотр расписания',

@@ -1,7 +1,7 @@
 const parsing = require('../parsing/parsing.js'),
-  moment = require('moment'),
-  cacher = require('../cache/cache.js');
-
+  	moment = require('moment'),
+	cacher = require('../cache/cache.js');
+	
 function getTodaySchedule(groupOid) {
 	let type = 'on_today';
 	let today = moment();
@@ -66,4 +66,4 @@ function getNextWeekSchedule(groupOid) {
 	return schedule;
 }
 
-module.exports = {getTodaySchedule, getTomorrowSchedule, getCurWeekSchedule, getNextWeekSchedule};
+module.exports = {getTodaySchedule, getTomorrowSchedule, getCurWeekSchedule, getNextWeekSchedule}

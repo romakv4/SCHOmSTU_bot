@@ -70,6 +70,7 @@ function getCourseKeyboard(connection, facultyAlias) {
 
 function getGroupKeyboard(connection, facultyAlias, course) {
 	let gr = settings_model.getGroups(connection, facultyAlias, course);
+	console.log(gr);
 	let groupChooseKeyboard = [];
 	for (let i = 0; i < gr.length; i++) {
 		groupChooseKeyboard.push([{text:gr[i].name, callback_data:gr[i].name}]);
@@ -105,7 +106,7 @@ let userKeyboard =
 		]
 	];
 
-	let userSettingsKeyboard =
+let userSettingsKeyboard =
 		[
 			[
 				{
@@ -146,4 +147,4 @@ let scheduleKeyboard =
 
 module.exports = {facultyChooseFirstRow, facultyChooseSecondRow, facultyChooseThirdRow,
 					getCourseKeyboard, getGroupKeyboard, saveKeyboard,
-					userKeyboard, userSettingsKeyboard, scheduleKeyboard};
+					userKeyboard, userSettingsKeyboard, scheduleKeyboard}

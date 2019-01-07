@@ -1,4 +1,4 @@
-const	TelegramBot = require('node-telegram-bot-api'),
+const TelegramBot = require('node-telegram-bot-api'),
 	keyboards = require('./keyboards/keyboards.js'),
 	bot_commands = require('./bot/commands.js'),
 	bot_actions = require('./bot/actions.js'),
@@ -14,9 +14,9 @@ const connection = new mysql(config.get("db_config"));
 
 let bot = new TelegramBot(token, {
 	polling: true,
-	request: {
-		proxy: 'http://localhost:9051'
-	}
+	// request: {
+	// 	proxy: 'http://localhost:9051'
+	// }
 });
 
 let commands = bot_commands.commands;
@@ -123,8 +123,10 @@ bot.on('message', function(msg) {
 });
 
 bot.on('callback_query', function (callbackQuery) {
+	
 	const action = callbackQuery.data;
 	const msg = callbackQuery.message;
+
 	//user settings
 	if(hasAction(keyboards.facultyChooseFirstRow, action)
 	|| hasAction(keyboards.facultyChooseSecondRow, action)

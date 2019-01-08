@@ -3,6 +3,7 @@ const TelegramBot = require('node-telegram-bot-api'),
 	bot_commands = require('./bot/commands.js'),
 	bot_actions = require('./bot/actions.js'),
 	mysql = require('sync-mysql'),
+	async_mysql = require('mysql'),
 	schedule_getter = require('./schedule/schedule_getter.js'),
 	settings_model = require('./model/settings.js'),
 	user_model = require('./model/user.js'),
@@ -34,15 +35,24 @@ let previousMsg = '';
 let currentMsg = '';
 
 bot.on('message', function(msg) {
+
+	const for_async_connection = async_mysql.createConnection(config.get("db_config"));
 	let chatId = msg.chat.id;
+
 	switch(msg.text) {
 		case commands.start: {
-			isNewUser = user_model.isNewUser(connection, chatId);
-			if(isNewUser === true) {
-				bot.sendMessage(chatId, ...bot_actions.chooseFaculty());
-			} else {
-				bot.sendMessage(chatId, ...bot_actions.doAction());
-			}
+			user_model.getUser(for_async_connection, chatId, function(err, result) {
+				if (err) {
+					throw err;
+				} else if (result[0] === undefined) {
+					isNewUser = true;
+					bot.sendMessage(chatId, ...bot_actions.chooseFaculty());
+				} else {
+					isNewUser = false;
+					bot.sendMessage(chatId, ...bot_actions.doAction());
+				}
+				for_async_connection.end();
+			});
 			break;
 		}
 		case commands.help: {
@@ -54,27 +64,75 @@ bot.on('message', function(msg) {
 			break;
 		}
 		case commands.onToday: {
-			let groupOid = user_model.getUserGroupOid(connection, msg);
-			let schedule = schedule_getter.getTodaySchedule(groupOid);
-			bot.sendMessage(chatId, ...bot_actions.onTodaySchedule(schedule, msg));
+			user_model.getUser(for_async_connection, chatId, function(err, user) {
+				if (err) {
+					throw err;
+				} else if (user !== undefined) {
+					user_model.getUserData(for_async_connection, user[0].group_id, function(err, userData) {
+						if (err) {
+							throw err;
+						} else if (userData !== undefined) {
+							let schedule = schedule_getter.getTodaySchedule(userData[0].group_oid);
+							bot.sendMessage(chatId, ...bot_actions.onTodaySchedule(schedule, msg));
+						}
+					});
+				}
+				for_async_connection.end();
+			});
 			break;
 		}
 		case commands.onTomorrow: {
-			let groupOid = user_model.getUserGroupOid(connection, msg);
-			let schedule = schedule_getter.getTomorrowSchedule(groupOid);
-			bot.sendMessage(chatId, ...bot_actions.onTomorrowSchedule(schedule, msg));
+			user_model.getUser(for_async_connection, chatId, function(err, user) {
+				if (err) {
+					throw err;
+				} else if (user !== undefined) {
+					user_model.getUserData(for_async_connection, user[0].group_id, function(err, userData) {
+						if (err) {
+							throw err;
+						} else if (userData !== undefined) {
+							let schedule = schedule_getter.getTomorrowSchedule(userData[0].group_oid);
+							bot.sendMessage(chatId, ...bot_actions.onTomorrowSchedule(schedule, msg));
+						}
+					});
+				}
+				for_async_connection.end();
+			});
 			break;
 		}
 		case commands.onCurrentWeek: {
-			let groupOid = user_model.getUserGroupOid(connection, msg);
-			let schedule = schedule_getter.getCurWeekSchedule(groupOid);
-			bot.sendMessage(chatId, ...bot_actions.onCurWeekSchedule(schedule, msg));
+			user_model.getUser(for_async_connection, chatId, function(err, user) {
+				if (err) {
+					throw err;
+				} else if (user !== undefined) {
+					user_model.getUserData(for_async_connection, user[0].group_id, function(err, userData) {
+						if (err) {
+							throw err;
+						} else if (userData !== undefined) {
+							let schedule = schedule_getter.getCurWeekSchedule(userData[0].group_oid);
+							bot.sendMessage(chatId, ...bot_actions.onCurWeekSchedule(schedule, msg));
+						}
+					});
+				}
+				for_async_connection.end();
+			});
 			break;
 		}
 		case commands.onNextWeek: {
-			let groupOid = user_model.getUserGroupOid(connection, msg);
-			let schedule = schedule_getter.getNextWeekSchedule(groupOid);
-			bot.sendMessage(chatId, ...bot_actions.onNextWeekSchedule(schedule, msg));
+			user_model.getUser(for_async_connection, chatId, function(err, user) {
+				if (err) {
+					throw err;
+				} else if (user !== undefined) {
+					user_model.getUserData(for_async_connection, user[0].group_id, function(err, userData) {
+						if (err) {
+							throw err;
+						} else if (userData !== undefined) {
+							let schedule = schedule_getter.getNextWeekSchedule(userData[0].group_oid);
+							bot.sendMessage(chatId, ...bot_actions.onNextWeekSchedule(schedule, msg));
+						}
+					});
+				}
+				for_async_connection.end();
+			});
 			break;
 		}
 		case commands.back: {
@@ -91,7 +149,11 @@ bot.on('message', function(msg) {
 			break;
 		}
 		case commands.settings: {
-			bot.sendMessage(chatId, ...bot_actions.getSettings(connection, msg));
+			bot_actions.getSettings(for_async_connection, chatId, function(err, text, opts) {
+				if (err) throw err;
+				bot.sendMessage(chatId, text, opts);
+				for_async_connection.end();
+			});
 			break;
 		}
 		case commands.changeSettings: {

@@ -67,7 +67,7 @@ function chooseGroup(connection, msg, facultyAlias, course) {
 	return [text, opts];
 }
 
-function saveQuestion(connection, msg, facultyName, course, group) {
+function saveQuestion(msg, facultyName, course, group) {
 	let text = 'Настройка завершена. Новые параметры:\nФакультет: ' +facultyName+ '\nКурс: ' +course+ '\nГруппа: ' +group+ '\nСохранить установленные параметры?';
 	let opts = {
 		chat_id: msg.chat.id,
@@ -79,20 +79,28 @@ function saveQuestion(connection, msg, facultyName, course, group) {
 	return [text, opts];
 }
 
-function getSettings(connection, msg) {
-	let userGroupId = user_model.getUserGroupId(connection, msg);
-	let userFacultyName = user_model.getUserFacultyName(connection, userGroupId);
-	let userGroupData = user_model.getUserGroupData(connection, userGroupId);
-
-	let text = `Ваши текущие параметры:\nФакультет: ${userFacultyName}\nКурс: ${userGroupData.course}\nГруппа: ${userGroupData.name}\nЧто вы хотите сделать далее?`;
-
-	let opts = {
-		chat_id: msg.chat.id,
-		reply_markup: {
-			keyboard: keyboards.userSettingsKeyboard
+function getSettings(connection, chatId, callback) {
+	user_model.getUser(connection, chatId, function(err, user) {
+		if (err) {
+			throw err
+		} else if (user !== undefined) {
+			user_model.getUserData(connection, user[0].group_id, function(err, userData) {
+				if (err) {
+					throw err;
+				} else if (userData !== undefined) {
+					console.log(userData);
+					let text = `Ваши текущие параметры:\nФакультет: ${userData[0].f_name}\nКурс: ${userData[0].course}\nГруппа: ${userData[0].g_name}\nЧто вы хотите сделать далее?`;
+					let opts = {
+						chat_id: chatId,
+						reply_markup: {
+							keyboard: keyboards.userSettingsKeyboard
+						}
+					}
+					callback(null, text, opts);
+				}
+			});
 		}
-	}
-	return [text, opts];
+	});
 }
 
 function saveSettings(success, msg) {

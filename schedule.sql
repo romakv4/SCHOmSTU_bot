@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Хост: localhost
--- Время создания: Окт 29 2018 г., 20:35
+-- Время создания: Янв 09 2019 г., 09:20
 -- Версия сервера: 5.7.22
 -- Версия PHP: 7.1.17
 
@@ -30,7 +30,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `faculty` (
   `id` int(11) NOT NULL,
-  `name` varchar(60) NOT NULL,
+  `f_name` varchar(60) NOT NULL,
   `alias` varchar(10) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -38,7 +38,7 @@ CREATE TABLE `faculty` (
 -- Дамп данных таблицы `faculty`
 --
 
-INSERT INTO `faculty` (`id`, `name`, `alias`) VALUES
+INSERT INTO `faculty` (`id`, `f_name`, `alias`) VALUES
 (1, 'Гуманитарного образования', 'fgo'),
 (2, 'Заочного обучения', 'zaoch'),
 (3, 'Информационных технологий и компьютерных систем', 'fitiks'),
@@ -62,7 +62,7 @@ CREATE TABLE `group` (
   `id` int(11) NOT NULL,
   `faculty_id` int(11) NOT NULL,
   `course` int(11) NOT NULL,
-  `name` varchar(40) NOT NULL,
+  `g_name` varchar(40) NOT NULL,
   `group_oid` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -70,7 +70,7 @@ CREATE TABLE `group` (
 -- Дамп данных таблицы `group`
 --
 
-INSERT INTO `group` (`id`, `faculty_id`, `course`, `name`, `group_oid`) VALUES
+INSERT INTO `group` (`id`, `faculty_id`, `course`, `g_name`, `group_oid`) VALUES
 (6272, 1, 1, 'ВГМУ-181', 1856),
 (6273, 1, 1, 'ВД-181', 1862),
 (6274, 1, 1, 'ВСР-181', 1889),
@@ -1111,6 +1111,7 @@ ALTER TABLE `group`
 --
 ALTER TABLE `user`
   ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `chat_id` (`chat_id`),
   ADD KEY `group_id_fk` (`group_id`);
 
 --
@@ -1133,7 +1134,7 @@ ALTER TABLE `group`
 -- AUTO_INCREMENT для таблицы `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Ограничения внешнего ключа сохраненных таблиц

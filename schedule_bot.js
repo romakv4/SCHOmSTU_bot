@@ -26,10 +26,10 @@ let facultyAlias;
 let course;
 let group;
 
-let editMessageParams;
-
 let isNewUser;
-let userData = [];
+
+let editMessageParams;
+let userParams = [];
 
 let previousMsg = '';
 let currentMsg = '';
@@ -53,6 +53,18 @@ bot.on('message', function(msg) {
 				}
 				for_async_connection.end();
 			});
+			// for_async_connection.connect(function(err, res) {
+			// 	if (err) throw err;
+			// 	for_async_connection.query('SELECT id, group_id, chat_id FROM user WHERE chat_id=' + chatId, function(err, res) {
+			// 		if (err) throw err;
+			// 		if (res[0] === undefined) {
+			// 			bot.sendMessage(chatId, ...bot_actions.chooseFaculty());
+			// 		} else {
+			// 			bot.sendMessage(chatId, ...bot_actions.doAction());
+			// 		}
+			// 	});
+			// 	for_async_connection.end();
+			// })
 			break;
 		}
 		case commands.help: {
@@ -186,6 +198,8 @@ bot.on('message', function(msg) {
 
 bot.on('callback_query', function (callbackQuery) {
 	
+	const for_async_connection = async_mysql.createConnection(config.get("db_config"));
+
 	const action = callbackQuery.data;
 	const msg = callbackQuery.message;
 
@@ -207,37 +221,43 @@ bot.on('callback_query', function (callbackQuery) {
 	if(facultyAlias != undefined && course != undefined && hasAction(keyboards.getGroupKeyboard(connection, facultyAlias, course), action)) {
 		group = action;
 		let group_id = settings_model.getGroupId(connection, action);
-		userData.push(group_id);
-		userData.push(msg.chat.id);
-		let facultyName = user_model.getUserFacultyName(connection, userData[0]);
-		editMessageParams = bot_actions.saveQuestion(connection, msg, facultyName, course, group);
-		bot.editMessageText(...editMessageParams);
+		userParams.push(group_id);
+		userParams.push(msg.chat.id);
+		user_model.getUserData(for_async_connection, group_id, function(err, userData) {
+			if (err) throw err;
+			if (userData !== undefined) {
+				let facultyName = userData[0].f_name;
+				editMessageParams = bot_actions.saveQuestion(msg, facultyName, course, group);
+				bot.editMessageText(...editMessageParams);
+			}
+		});
 	}
 
+	//Подумать что сделать с отказом от состояния.
 	if(action === 'save') {
 		let chatId = msg.chat.id;
 		if(isNewUser === true) {
-			if(settings_model.insertUserData(connection, ...userData).affectedRows != 0) {
+			if(settings_model.insertUserData(connection, ...userParams).affectedRows != 0) {
 				editMessageParams = bot_actions.saveSettings(true, msg);
 				bot.editMessageText(...editMessageParams);
 				bot.sendMessage(chatId, ...bot_actions.doAction());
-				userData = [];
+				userParams = [];
 			} else {
 				editMessageParams = bot_actions.saveSettings(false, msg);
-				userData = [];
+				userParams = [];
 				bot.editMessageText(...editMessageParams);
 			}
 		} else {
-			if(settings_model.updateUserData(connection, ...userData).affectedRows != 0) {
+			if(settings_model.updateUserData(connection, ...userParams).affectedRows != 0) {
 				editMessageParams = bot_actions.saveSettings(true, msg);
 				bot.editMessageText(...editMessageParams);
 				bot.sendMessage(chatId, ...bot_actions.doAction());
-				userData = [];
+				userParams = [];
 				currentMsg = '';
 				previousMsg = '';
 			} else {
 				editMessageParams = bot_actions.saveSettings(false, msg);
-				userData = [];
+				userParams = [];
 				bot.editMessageText(...editMessageParams);
 			}
 		}

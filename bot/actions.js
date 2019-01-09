@@ -88,7 +88,6 @@ function getSettings(connection, chatId, callback) {
 				if (err) {
 					throw err;
 				} else if (userData !== undefined) {
-					console.log(userData);
 					let text = `Ваши текущие параметры:\nФакультет: ${userData[0].f_name}\nКурс: ${userData[0].course}\nГруппа: ${userData[0].g_name}\nЧто вы хотите сделать далее?`;
 					let opts = {
 						chat_id: chatId,

@@ -72,7 +72,7 @@ function getGroupKeyboard(connection, facultyAlias, course) {
 	let gr = settings_model.getGroups(connection, facultyAlias, course);
 	let groupChooseKeyboard = [];
 	for (let i = 0; i < gr.length; i++) {
-		groupChooseKeyboard.push([{text:gr[i].name, callback_data:gr[i].name}]);
+		groupChooseKeyboard.push([{text:gr[i].g_name, callback_data:gr[i].g_name}]);
 	}
 	return groupChooseKeyboard;
 }

@@ -58,23 +58,30 @@ let facultyChooseThirdRow =
 			}
 		];
 
-function getCourseKeyboard(connection, facultyAlias) {
-	let courses = settings_model.getCourses(connection, facultyAlias);
-	let count = courses.length;
-	let courseChooseKeyboard = [];
-	for(let i = 0; i < count; i++) {
-		courseChooseKeyboard.push({text:courses[i].course, callback_data:String(courses[i].course)});
-	}
-	return [courseChooseKeyboard];
+function getCourseKeyboard(connection, facultyAlias, callback) {
+	settings_model.getCourses(connection, facultyAlias, function(err, courses) {
+		if (err) throw err;
+		if(courses.length !== 0) {
+			let chooseCourseKeyboard = [];
+			for(let i = 0; i < courses.length; i++) {
+				chooseCourseKeyboard.push({text:courses[i].course, callback_data:String(courses[i].course)});
+			}
+			callback(null, chooseCourseKeyboard);
+		}
+	});
 }
 
-function getGroupKeyboard(connection, facultyAlias, course) {
-	let gr = settings_model.getGroups(connection, facultyAlias, course);
-	let groupChooseKeyboard = [];
-	for (let i = 0; i < gr.length; i++) {
-		groupChooseKeyboard.push([{text:gr[i].g_name, callback_data:gr[i].g_name}]);
-	}
-	return groupChooseKeyboard;
+function getGroupKeyboard(connection, facultyAlias, course, callback) {
+	settings_model.getGroups(connection, facultyAlias, course, function(err, groups) {
+		if (err) throw err;
+		if(groups.length !== 0) {
+			let chooseGroupKeyboard = [];
+			for (let i = 0; i < groups.length; i++) {
+				chooseGroupKeyboard.push([{text:groups[i].g_name, callback_data:groups[i].g_name}]);
+			}
+			callback(null, chooseGroupKeyboard);
+		}
+	});
 }
 
 let saveKeyboard =

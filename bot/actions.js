@@ -43,28 +43,38 @@ function chooseFaculty() {
 	return [text, opts];
 }
 
-function chooseCourse(connection, msg, facultyAlias) {
-	let text = 'Отлично! Выберите курс.'
-	let opts = {
-		chat_id: msg.chat.id,
-		message_id: msg.message_id,
-		reply_markup: {
-			inline_keyboard: keyboards.getCourseKeyboard(connection, facultyAlias)
+function chooseCourse(connection, msg, facultyAlias, callback) {
+	keyboards.getCourseKeyboard(connection, facultyAlias, function(err, chooseCourseKeyboard) {
+		if (err) throw err;
+		if(chooseCourseKeyboard[0] !== undefined) {
+			let text = 'Отлично! Выберите курс.'
+			let opts = {
+				chat_id: msg.chat.id,
+				message_id: msg.message_id,
+				reply_markup: {
+					inline_keyboard: [chooseCourseKeyboard]
+				}
+			}
+			callback(null, text, opts);
 		}
-	}
-	return [text, opts];
+	});
 }
 
-function chooseGroup(connection, msg, facultyAlias, course) {
-	let text = 'Супер! Осталось выбрать группу.';
-	let opts = {
-		chat_id: msg.chat.id,
-		message_id: msg.message_id,
-		reply_markup: {
-			inline_keyboard: keyboards.getGroupKeyboard(connection, facultyAlias, course)
+function chooseGroup(connection, msg, facultyAlias, course, callback) {
+	keyboards.getGroupKeyboard(connection, facultyAlias, course, function(err, chooseGroupKeyboard) {
+		if (err) throw err;
+		if(chooseGroupKeyboard[0] !== undefined) {
+			let text = 'Супер! Осталось выбрать группу.';
+			let opts = {
+				chat_id: msg.chat.id,
+				message_id: msg.message_id,
+				reply_markup: {
+					inline_keyboard: chooseGroupKeyboard
+				}
+			}
+			callback(null, text, opts);
 		}
-	}
-	return [text, opts];
+	});
 }
 
 function saveQuestion(msg, facultyName, course, group) {
@@ -81,13 +91,11 @@ function saveQuestion(msg, facultyName, course, group) {
 
 function getSettings(connection, chatId, callback) {
 	user_model.getUser(connection, chatId, function(err, user) {
-		if (err) {
-			throw err
-		} else if (user !== undefined) {
+		if (err) throw err
+		if (user[0] !== undefined) {
 			user_model.getUserData(connection, user[0].group_id, function(err, userData) {
-				if (err) {
-					throw err;
-				} else if (userData !== undefined) {
+				if (err) throw err;
+				if (userData[0] !== undefined) {
 					let text = `Ваши текущие параметры:\nФакультет: ${userData[0].f_name}\nКурс: ${userData[0].course}\nГруппа: ${userData[0].g_name}\nЧто вы хотите сделать далее?`;
 					let opts = {
 						chat_id: chatId,

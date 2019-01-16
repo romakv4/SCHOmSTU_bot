@@ -2,8 +2,7 @@ const TelegramBot = require('node-telegram-bot-api'),
 	keyboards = require('./keyboards/keyboards.js'),
 	bot_commands = require('./bot/commands.js'),
 	bot_actions = require('./bot/actions.js'),
-	mysql = require('sync-mysql'),
-	async_mysql = require('mysql'),
+	mysql = require('mysql'),
 	schedule_getter = require('./schedule/schedule_getter.js'),
 	settings_model = require('./model/settings.js'),
 	user_model = require('./model/user.js'),
@@ -11,7 +10,7 @@ const TelegramBot = require('node-telegram-bot-api'),
 
 const token = config.get("token");
 
-const connection = new mysql(config.get("db_config"));
+const connection = mysql.createConnection(config.get("db_config"));
 
 let bot = new TelegramBot(token, {
 	polling: true,
@@ -34,19 +33,17 @@ let currentMsg = '';
 
 bot.on('message', function(msg) {
 
-	const for_async_connection = async_mysql.createConnection(config.get("db_config"));
 	let chatId = msg.chat.id;
 
 	switch(msg.text) {
 		case commands.start: {
-			user_model.getUser(for_async_connection, chatId, function(err, user) {
+			user_model.getUser(connection, chatId, function(err, user) {
 				if (err) throw err;
 				if (user[0] === undefined) {
 					bot.sendMessage(chatId, ...bot_actions.chooseFaculty());
 				} else {
 					bot.sendMessage(chatId, ...bot_actions.doAction());
 				}
-				for_async_connection.end();
 			});
 			break;
 		}
@@ -59,10 +56,10 @@ bot.on('message', function(msg) {
 			break;
 		}
 		case commands.onToday: {
-			user_model.getUser(for_async_connection, chatId, function(err, user) {
+			user_model.getUser(connection, chatId, function(err, user) {
 				if (err) throw err;
 				if (user[0] !== undefined) {
-					user_model.getUserData(for_async_connection, user[0].group_id, function(err, userData) {
+					user_model.getUserData(connection, user[0].group_id, function(err, userData) {
 						if (err) throw err;
 						if (userData[0] !== undefined) {
 							let schedule = schedule_getter.getTodaySchedule(userData[0].group_oid);
@@ -70,15 +67,14 @@ bot.on('message', function(msg) {
 						}
 					});
 				}
-				for_async_connection.end();
 			});
 			break;
 		}
 		case commands.onTomorrow: {
-			user_model.getUser(for_async_connection, chatId, function(err, user) {
+			user_model.getUser(connection, chatId, function(err, user) {
 				if (err) throw err;
 				if (user[0] !== undefined) {
-					user_model.getUserData(for_async_connection, user[0].group_id, function(err, userData) {
+					user_model.getUserData(connection, user[0].group_id, function(err, userData) {
 						if (err) throw err;
 						if (userData[0] !== undefined) {
 							let schedule = schedule_getter.getTomorrowSchedule(userData[0].group_oid);
@@ -86,15 +82,14 @@ bot.on('message', function(msg) {
 						}
 					});
 				}
-				for_async_connection.end();
 			});
 			break;
 		}
 		case commands.onCurrentWeek: {
-			user_model.getUser(for_async_connection, chatId, function(err, user) {
+			user_model.getUser(connection, chatId, function(err, user) {
 				if (err) throw err;
 				if (user[0] !== undefined) {
-					user_model.getUserData(for_async_connection, user[0].group_id, function(err, userData) {
+					user_model.getUserData(connection, user[0].group_id, function(err, userData) {
 						if (err) throw err;
 						if (userData[0] !== undefined) {
 							let schedule = schedule_getter.getCurWeekSchedule(userData[0].group_oid);
@@ -102,15 +97,14 @@ bot.on('message', function(msg) {
 						}
 					});
 				}
-				for_async_connection.end();
 			});
 			break;
 		}
 		case commands.onNextWeek: {
-			user_model.getUser(for_async_connection, chatId, function(err, user) {
+			user_model.getUser(connection, chatId, function(err, user) {
 				if (err) throw err;
 				if (user[0] !== undefined) {
-					user_model.getUserData(for_async_connection, user[0].group_id, function(err, userData) {
+					user_model.getUserData(connection, user[0].group_id, function(err, userData) {
 						if (err) throw err;
 						if (userData[0] !== undefined) {
 							let schedule = schedule_getter.getNextWeekSchedule(userData[0].group_oid);
@@ -118,7 +112,6 @@ bot.on('message', function(msg) {
 						}
 					});
 				}
-				for_async_connection.end();
 			});
 			break;
 		}
@@ -136,10 +129,9 @@ bot.on('message', function(msg) {
 			break;
 		}
 		case commands.settings: {
-			bot_actions.getSettings(for_async_connection, chatId, function(err, text, opts) {
+			bot_actions.getSettings(connection, chatId, function(err, text, opts) {
 				if (err) throw err;
 				bot.sendMessage(chatId, text, opts);
-				for_async_connection.end();
 			});
 			break;
 		}
@@ -150,6 +142,9 @@ bot.on('message', function(msg) {
 				previousMsg = currentMsg;
 			}
 			if(currentMsg === previousMsg) {
+				facultyAlias = undefined;
+				course = undefined;
+				group = undefined;
 				editMessageParams = bot_actions.repeatChangeSettings(msg);
 				bot.editMessageText(...editMessageParams);
 			}
@@ -172,52 +167,65 @@ bot.on('message', function(msg) {
 });
 
 bot.on('callback_query', function (callbackQuery) {
-	
-	const for_async_connection = async_mysql.createConnection(config.get("db_config"));
 
 	const action = callbackQuery.data;
 	const msg = callbackQuery.message;
 
 	//user settings
+
+	if(facultyAlias !== undefined && course !== undefined) {
+		group = action;
+		keyboards.getGroupKeyboard(connection, facultyAlias, course, function(err, chooseGroupKeyboard) {
+			if (err) throw err;
+			if(chooseGroupKeyboard.some(elem => elem[0].callback_data === action)) {
+				settings_model.getGroupId(connection, action, function(err, group_id) {
+					if (err) throw err;
+					userParams.push(group_id);
+					userParams.push(msg.chat.id);
+					user_model.getUserData(connection, group_id, function(err, userData) {
+						if (err) throw err;
+						if (userData[0] !== undefined) {
+							let facultyName = userData[0].f_name;
+							editMessageParams = bot_actions.saveQuestion(msg, facultyName, course, group);
+							bot.editMessageText(...editMessageParams);
+						}
+					});
+				});
+			};
+		});
+	}
+	
+	if(facultyAlias !== undefined && course === undefined) {
+		course = action;
+		keyboards.getCourseKeyboard(connection, facultyAlias, function(err, chooseCourseKeyboard) {
+			if (err) throw err;
+			if(chooseCourseKeyboard.some(elem => elem.callback_data === action)) {
+				bot_actions.chooseGroup(connection, msg, facultyAlias, action, function(err, text, opts) {
+					if (err) throw err;
+					bot.editMessageText(text, opts);
+				});	
+			};
+		});
+	}
+	
 	if(hasAction(keyboards.facultyChooseFirstRow, action)
 	|| hasAction(keyboards.facultyChooseSecondRow, action)
 	|| hasAction(keyboards.facultyChooseThirdRow, action)) {
 		facultyAlias = action;
-		editMessageParams = bot_actions.chooseCourse(connection, msg, action);
-		bot.editMessageText(...editMessageParams);
-	}
-
-	if(facultyAlias != undefined && hasAction(keyboards.getCourseKeyboard(connection, facultyAlias), action)) {
-		course = action;
-		editMessageParams = bot_actions.chooseGroup(connection, msg, facultyAlias, course);
-		bot.editMessageText(...editMessageParams);
-	}
-
-	if(facultyAlias != undefined && course != undefined && hasAction(keyboards.getGroupKeyboard(connection, facultyAlias, course), action)) {
-		group = action;
-		settings_model.getGroupId(for_async_connection, action, function(err, group_id) {
+		bot_actions.chooseCourse(connection, msg, action, function(err, text, opts) {
 			if (err) throw err;
-			userParams.push(group_id);
-			userParams.push(msg.chat.id);
-			user_model.getUserData(for_async_connection, group_id, function(err, userData) {
-				if (err) throw err;
-				if (userData[0] !== undefined) {
-					let facultyName = userData[0].f_name;
-					editMessageParams = bot_actions.saveQuestion(msg, facultyName, course, group);
-					bot.editMessageText(...editMessageParams);
-				}
-			});
-		});
+			bot.editMessageText(text, opts);
+		});		
 	}
 
 	if(action === 'save') {
 
 		let chatId = msg.chat.id;
 
-		user_model.getUser(for_async_connection, chatId, function(err, user) {
+		user_model.getUser(connection, chatId, function(err, user) {
 			if (err) throw err;
 			if(user[0] === undefined) {
-				settings_model.insertUserData(for_async_connection, userParams[0], userParams[1], function(err, result) {
+				settings_model.insertUserData(connection, userParams[0], userParams[1], function(err, result) {
 					if (err) throw err;
 					if(result.affectedRows != 0) {
 						editMessageParams = bot_actions.saveSettings(true, msg);
@@ -229,9 +237,9 @@ bot.on('callback_query', function (callbackQuery) {
 						userParams = [];
 						bot.editMessageText(...editMessageParams);
 					}
-				});
+				});				
 			} else {
-				settings_model.updateUserData(for_async_connection, userParams[0], userParams[1], function(err, result) {
+				settings_model.updateUserData(connection, userParams[0], userParams[1], function(err, result) {
 					if (err) throw err;
 					if(result.affectedRows != 0) {
 						editMessageParams = bot_actions.saveSettings(true, msg);

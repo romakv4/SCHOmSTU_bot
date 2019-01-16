@@ -1,10 +1,7 @@
 function getUser(connection, chatId, callback) {
-	connection.connect(function(err) {
-		if (err) throw err;
-		connection.query('SELECT id, group_id, chat_id FROM user WHERE chat_id=' + chatId, function(err, res) {
-			if (err) callback(err, null);
-			callback(null, res);
-		});
+	connection.query('SELECT id, group_id, chat_id FROM user WHERE chat_id=' + chatId, function(err, res) {
+		if (err) callback(err, null);
+		callback(null, res);
 	});
 }
 

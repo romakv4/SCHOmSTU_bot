@@ -26,8 +26,6 @@ let facultyAlias;
 let course;
 let group;
 
-let isNewUser;
-
 let editMessageParams;
 let userParams = [];
 
@@ -41,30 +39,15 @@ bot.on('message', function(msg) {
 
 	switch(msg.text) {
 		case commands.start: {
-			user_model.getUser(for_async_connection, chatId, function(err, result) {
-				if (err) {
-					throw err;
-				} else if (result[0] === undefined) {
-					isNewUser = true;
+			user_model.getUser(for_async_connection, chatId, function(err, user) {
+				if (err) throw err;
+				if (user[0] === undefined) {
 					bot.sendMessage(chatId, ...bot_actions.chooseFaculty());
 				} else {
-					isNewUser = false;
 					bot.sendMessage(chatId, ...bot_actions.doAction());
 				}
 				for_async_connection.end();
 			});
-			// for_async_connection.connect(function(err, res) {
-			// 	if (err) throw err;
-			// 	for_async_connection.query('SELECT id, group_id, chat_id FROM user WHERE chat_id=' + chatId, function(err, res) {
-			// 		if (err) throw err;
-			// 		if (res[0] === undefined) {
-			// 			bot.sendMessage(chatId, ...bot_actions.chooseFaculty());
-			// 		} else {
-			// 			bot.sendMessage(chatId, ...bot_actions.doAction());
-			// 		}
-			// 	});
-			// 	for_async_connection.end();
-			// })
 			break;
 		}
 		case commands.help: {
@@ -77,13 +60,11 @@ bot.on('message', function(msg) {
 		}
 		case commands.onToday: {
 			user_model.getUser(for_async_connection, chatId, function(err, user) {
-				if (err) {
-					throw err;
-				} else if (user !== undefined) {
+				if (err) throw err;
+				if (user[0] !== undefined) {
 					user_model.getUserData(for_async_connection, user[0].group_id, function(err, userData) {
-						if (err) {
-							throw err;
-						} else if (userData !== undefined) {
+						if (err) throw err;
+						if (userData[0] !== undefined) {
 							let schedule = schedule_getter.getTodaySchedule(userData[0].group_oid);
 							bot.sendMessage(chatId, ...bot_actions.onTodaySchedule(schedule, msg));
 						}
@@ -95,13 +76,11 @@ bot.on('message', function(msg) {
 		}
 		case commands.onTomorrow: {
 			user_model.getUser(for_async_connection, chatId, function(err, user) {
-				if (err) {
-					throw err;
-				} else if (user !== undefined) {
+				if (err) throw err;
+				if (user[0] !== undefined) {
 					user_model.getUserData(for_async_connection, user[0].group_id, function(err, userData) {
-						if (err) {
-							throw err;
-						} else if (userData !== undefined) {
+						if (err) throw err;
+						if (userData[0] !== undefined) {
 							let schedule = schedule_getter.getTomorrowSchedule(userData[0].group_oid);
 							bot.sendMessage(chatId, ...bot_actions.onTomorrowSchedule(schedule, msg));
 						}
@@ -113,13 +92,11 @@ bot.on('message', function(msg) {
 		}
 		case commands.onCurrentWeek: {
 			user_model.getUser(for_async_connection, chatId, function(err, user) {
-				if (err) {
-					throw err;
-				} else if (user !== undefined) {
+				if (err) throw err;
+				if (user[0] !== undefined) {
 					user_model.getUserData(for_async_connection, user[0].group_id, function(err, userData) {
-						if (err) {
-							throw err;
-						} else if (userData !== undefined) {
+						if (err) throw err;
+						if (userData[0] !== undefined) {
 							let schedule = schedule_getter.getCurWeekSchedule(userData[0].group_oid);
 							bot.sendMessage(chatId, ...bot_actions.onCurWeekSchedule(schedule, msg));
 						}
@@ -131,13 +108,11 @@ bot.on('message', function(msg) {
 		}
 		case commands.onNextWeek: {
 			user_model.getUser(for_async_connection, chatId, function(err, user) {
-				if (err) {
-					throw err;
-				} else if (user !== undefined) {
+				if (err) throw err;
+				if (user[0] !== undefined) {
 					user_model.getUserData(for_async_connection, user[0].group_id, function(err, userData) {
-						if (err) {
-							throw err;
-						} else if (userData !== undefined) {
+						if (err) throw err;
+						if (userData[0] !== undefined) {
 							let schedule = schedule_getter.getNextWeekSchedule(userData[0].group_oid);
 							bot.sendMessage(chatId, ...bot_actions.onNextWeekSchedule(schedule, msg));
 						}
@@ -151,7 +126,7 @@ bot.on('message', function(msg) {
 			previousMsg = currentMsg;
 			currentMsg = msg.text;
 			if(previousMsg === '🛠 Изменение настроек' && currentMsg === '🔙 Назад') {
-				userData = [];
+				userParams = [];
 				editMessageParams = bot_actions.repeatChangeSettings(msg);
 				bot.editMessageText(...editMessageParams);
 			}
@@ -220,47 +195,53 @@ bot.on('callback_query', function (callbackQuery) {
 
 	if(facultyAlias != undefined && course != undefined && hasAction(keyboards.getGroupKeyboard(connection, facultyAlias, course), action)) {
 		group = action;
-		let group_id = settings_model.getGroupId(connection, action);
-		userParams.push(group_id);
-		userParams.push(msg.chat.id);
-		user_model.getUserData(for_async_connection, group_id, function(err, userData) {
+		settings_model.getGroupId(for_async_connection, action, function(err, group_id) {
 			if (err) throw err;
-			if (userData !== undefined) {
-				let facultyName = userData[0].f_name;
-				editMessageParams = bot_actions.saveQuestion(msg, facultyName, course, group);
-				bot.editMessageText(...editMessageParams);
-			}
+			userParams.push(group_id);
+			userParams.push(msg.chat.id);
+			user_model.getUserData(for_async_connection, group_id, function(err, userData) {
+				if (err) throw err;
+				if (userData[0] !== undefined) {
+					let facultyName = userData[0].f_name;
+					editMessageParams = bot_actions.saveQuestion(msg, facultyName, course, group);
+					bot.editMessageText(...editMessageParams);
+				}
+			});
 		});
 	}
 
-	//Подумать что сделать с отказом от состояния.
 	if(action === 'save') {
+
 		let chatId = msg.chat.id;
-		if(isNewUser === true) {
-			if(settings_model.insertUserData(connection, ...userParams).affectedRows != 0) {
-				editMessageParams = bot_actions.saveSettings(true, msg);
-				bot.editMessageText(...editMessageParams);
-				bot.sendMessage(chatId, ...bot_actions.doAction());
-				userParams = [];
+
+		user_model.getUser(for_async_connection, chatId, function(err, user) {
+			if (err) throw err;
+			if(user[0] === undefined) {
+				if(settings_model.insertUserData(connection, ...userParams).affectedRows != 0) {
+					editMessageParams = bot_actions.saveSettings(true, msg);
+					bot.editMessageText(...editMessageParams);
+					bot.sendMessage(chatId, ...bot_actions.doAction());
+					userParams = [];
+				} else {
+					editMessageParams = bot_actions.saveSettings(false, msg);
+					userParams = [];
+					bot.editMessageText(...editMessageParams);
+				}
 			} else {
-				editMessageParams = bot_actions.saveSettings(false, msg);
-				userParams = [];
-				bot.editMessageText(...editMessageParams);
+				if(settings_model.updateUserData(connection, ...userParams).affectedRows != 0) {
+					editMessageParams = bot_actions.saveSettings(true, msg);
+					bot.editMessageText(...editMessageParams);
+					bot.sendMessage(chatId, ...bot_actions.doAction());
+					userParams = [];
+					currentMsg = '';
+					previousMsg = '';
+				} else {
+					editMessageParams = bot_actions.saveSettings(false, msg);
+					userParams = [];
+					bot.editMessageText(...editMessageParams);
+				}
 			}
-		} else {
-			if(settings_model.updateUserData(connection, ...userParams).affectedRows != 0) {
-				editMessageParams = bot_actions.saveSettings(true, msg);
-				bot.editMessageText(...editMessageParams);
-				bot.sendMessage(chatId, ...bot_actions.doAction());
-				userParams = [];
-				currentMsg = '';
-				previousMsg = '';
-			} else {
-				editMessageParams = bot_actions.saveSettings(false, msg);
-				userParams = [];
-				bot.editMessageText(...editMessageParams);
-			}
-		}
+		});
 	}
 
 	if(action === '!save') {

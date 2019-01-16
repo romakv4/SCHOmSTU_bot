@@ -16,12 +16,18 @@ function getGroupId(connection, name, callback) {
 	});
 }
 
-function insertUserData(connection, groupId, chatId) {
-	return connection.query('INSERT INTO `user` (group_id, chat_id) VALUES(' + groupId + ',' + chatId + ')');
+function insertUserData(connection, groupId, chatId, callback) {
+	connection.query('INSERT INTO `user` (group_id, chat_id) VALUES(' + groupId + ',' + chatId + ')', function(err, res) {
+		if (err) callback(err, null);
+		callback(null, res);
+	});
 }
 
-function updateUserData(connection, groupId, chatId) {
-	return connection.query('UPDATE `user` SET group_id=\'' + groupId + '\' WHERE chat_id='+chatId);
+function updateUserData(connection, groupId, chatId, callback) {
+	connection.query('UPDATE `user` SET group_id=\'' + groupId + '\' WHERE chat_id='+chatId, function(err, res) {
+		if (err) callback(err, null);
+		callback(null, res);
+	});
 }
 
 module.exports = {getCourses, getGroups, getGroupId, insertUserData, updateUserData};

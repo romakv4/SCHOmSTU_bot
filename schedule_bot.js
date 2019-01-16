@@ -217,29 +217,35 @@ bot.on('callback_query', function (callbackQuery) {
 		user_model.getUser(for_async_connection, chatId, function(err, user) {
 			if (err) throw err;
 			if(user[0] === undefined) {
-				if(settings_model.insertUserData(connection, ...userParams).affectedRows != 0) {
-					editMessageParams = bot_actions.saveSettings(true, msg);
-					bot.editMessageText(...editMessageParams);
-					bot.sendMessage(chatId, ...bot_actions.doAction());
-					userParams = [];
-				} else {
-					editMessageParams = bot_actions.saveSettings(false, msg);
-					userParams = [];
-					bot.editMessageText(...editMessageParams);
-				}
+				settings_model.insertUserData(for_async_connection, userParams[0], userParams[1], function(err, result) {
+					if (err) throw err;
+					if(result.affectedRows != 0) {
+						editMessageParams = bot_actions.saveSettings(true, msg);
+						bot.editMessageText(...editMessageParams);
+						bot.sendMessage(chatId, ...bot_actions.doAction());
+						userParams = [];
+					} else {
+						editMessageParams = bot_actions.saveSettings(false, msg);
+						userParams = [];
+						bot.editMessageText(...editMessageParams);
+					}
+				});
 			} else {
-				if(settings_model.updateUserData(connection, ...userParams).affectedRows != 0) {
-					editMessageParams = bot_actions.saveSettings(true, msg);
-					bot.editMessageText(...editMessageParams);
-					bot.sendMessage(chatId, ...bot_actions.doAction());
-					userParams = [];
-					currentMsg = '';
-					previousMsg = '';
-				} else {
-					editMessageParams = bot_actions.saveSettings(false, msg);
-					userParams = [];
-					bot.editMessageText(...editMessageParams);
-				}
+				settings_model.updateUserData(for_async_connection, userParams[0], userParams[1], function(err, result) {
+					if (err) throw err;
+					if(result.affectedRows != 0) {
+						editMessageParams = bot_actions.saveSettings(true, msg);
+						bot.editMessageText(...editMessageParams);
+						bot.sendMessage(chatId, ...bot_actions.doAction());
+						userParams = [];
+						currentMsg = '';
+						previousMsg = '';
+					} else {
+						editMessageParams = bot_actions.saveSettings(false, msg);
+						userParams = [];
+						bot.editMessageText(...editMessageParams);
+					}
+				});
 			}
 		});
 	}

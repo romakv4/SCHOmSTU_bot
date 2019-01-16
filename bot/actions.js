@@ -37,7 +37,7 @@ function chooseFaculty() {
 	let text = 'Приветствую! Укажите свой факультет.';
 	let opts = {
 		reply_markup: {
-			inline_keyboard: [keyboards.facultyChooseFirstRow, keyboards.facultyChooseSecondRow, keyboards.facultyChooseThirdRow]
+			inline_keyboard: keyboards.facultyChooseKeyboard
 		}
 	}
 	return [text, opts];
@@ -137,7 +137,7 @@ function changeSettings(msg) {
 		chat_id: msg.chat.id,
 		message_id: msg.message_id,
 		reply_markup: {
-			inline_keyboard: [keyboards.facultyChooseFirstRow, keyboards.facultyChooseSecondRow, keyboards.facultyChooseThirdRow]
+			inline_keyboard: keyboards.facultyChooseKeyboard
 		}
 	}
 	return [text, opts];

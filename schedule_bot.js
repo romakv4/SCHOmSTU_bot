@@ -136,15 +136,15 @@ bot.on('message', function(msg) {
 			break;
 		}
 		case commands.changeSettings: {
+			facultyAlias = undefined;
+			course = undefined;
+			group = undefined;
 			if(currentMsg === '') {
 				currentMsg += msg.text;
 			} else {
 				previousMsg = currentMsg;
 			}
 			if(currentMsg === previousMsg) {
-				facultyAlias = undefined;
-				course = undefined;
-				group = undefined;
 				editMessageParams = bot_actions.repeatChangeSettings(msg);
 				bot.editMessageText(...editMessageParams);
 			}
@@ -193,6 +193,7 @@ bot.on('callback_query', function (callbackQuery) {
 				});
 			};
 		});
+
 	}
 	
 	if(facultyAlias !== undefined && course === undefined) {
@@ -208,9 +209,7 @@ bot.on('callback_query', function (callbackQuery) {
 		});
 	}
 	
-	if(hasAction(keyboards.facultyChooseFirstRow, action)
-	|| hasAction(keyboards.facultyChooseSecondRow, action)
-	|| hasAction(keyboards.facultyChooseThirdRow, action)) {
+	if(facultyAlias === undefined, course === undefined) {
 		facultyAlias = action;
 		bot_actions.chooseCourse(connection, msg, action, function(err, text, opts) {
 			if (err) throw err;
@@ -259,20 +258,13 @@ bot.on('callback_query', function (callbackQuery) {
 	}
 
 	if(action === '!save') {
+		facultyAlias = undefined;
+		course = undefined;
+		group = undefined;
 		editMessageParams = bot_actions.changeSettings(msg);
 		bot.editMessageText(...editMessageParams);
 	}
 });
-
-function hasAction(array, action) {
-	if(array.length != 1 && array[0].length === undefined) {
-		return array.some(elem => elem.callback_data === action);
-	} else if(array.length != 1 && array[0].length != undefined) {
-		return array.some(elem => elem[0].callback_data === action);
-	} else if(array.length === 1 && array[0].length != undefined) {
-		return array[0].some(elem => elem.callback_data === action);
-	}
-}
 
 //Utilite method for debugging. Dont use in the bot.
 function strToHex(str) {

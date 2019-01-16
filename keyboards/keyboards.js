@@ -1,6 +1,7 @@
 const settings_model = require('../model/settings.js');
 
-let facultyChooseFirstRow =
+let facultyChooseKeyboard =
+	[
 		[
 			{
 				text: 'ФГО',
@@ -26,8 +27,7 @@ let facultyChooseFirstRow =
 				text: 'ЭНИ',
 				callback_data: 'eni'
 			}
-		];
-let facultyChooseSecondRow =
+		],
 		[
 			{
 				text: 'ФИТиКС',
@@ -45,8 +45,7 @@ let facultyChooseSecondRow =
 				text: 'ФЭОиМ',
 				callback_data: 'feoim'
 			}
-		];
-let facultyChooseThirdRow =
+		],
 		[
 			{
 				text: 'Заочного обучения',
@@ -56,7 +55,8 @@ let facultyChooseThirdRow =
 				text: 'Аспирантура и докторантура',
 				callback_data: 'asp_doct'
 			}
-		];
+		]
+	];
 
 function getCourseKeyboard(connection, facultyAlias, callback) {
 	settings_model.getCourses(connection, facultyAlias, function(err, courses) {
@@ -151,6 +151,5 @@ let scheduleKeyboard =
 		]
 	];
 
-module.exports = {facultyChooseFirstRow, facultyChooseSecondRow, facultyChooseThirdRow,
-					getCourseKeyboard, getGroupKeyboard, saveKeyboard,
-					userKeyboard, userSettingsKeyboard, scheduleKeyboard}
+module.exports = {facultyChooseKeyboard, getCourseKeyboard, getGroupKeyboard,
+					saveKeyboard, userKeyboard, userSettingsKeyboard, scheduleKeyboard}

@@ -21,30 +21,50 @@ let bot = new TelegramBot(token, {
 
 let commands = bot_commands.commands;
 
-let facultyAlias;
-let course;
-let group;
+let facultyAlias, course, group;
 
-let editMessageParams;
 let userParams = [];
 
-let previousMsg = '';
-let currentMsg = '';
+let previousMsg = '', currentMsg = '';
 
 bot.on('message', function(msg) {
 
 	let chatId = msg.chat.id;
 
+	if(currentMsg === '') {
+		currentMsg += msg.text;
+	} else {
+		previousMsg = currentMsg;
+	}
+
 	switch(msg.text) {
 		case commands.start: {
-			user_model.getUser(connection, chatId, function(err, user) {
-				if (err) throw err;
-				if (user[0] === undefined) {
-					bot.sendMessage(chatId, ...bot_actions.chooseFaculty());
-				} else {
-					bot.sendMessage(chatId, ...bot_actions.doAction());
-				}
-			});
+			facultyAlias = undefined, course = undefined, group = undefined;
+			if(currentMsg === previousMsg) {
+				bot_actions.prevChangeSettingsReset(msg, function(err, text, opts) {
+					if(err) throw err;
+					bot.editMessageText(text, opts);
+				});
+				bot_actions.chooseFaculty(msg.from.first_name, function(err, text, opts) {
+					if(err) throw err;
+					bot.sendMessage(chatId, text, opts);
+				});
+			} else {
+				user_model.getUser(connection, chatId, function(err, user) {
+					if (err) throw err;
+					if (user[0] === undefined) {
+						bot_actions.chooseFaculty(msg.from.first_name, function(err, text, opts) {
+							if(err) throw err;
+							bot.sendMessage(chatId, text, opts);
+						})
+					} else {
+						bot_actions.doAction(function(err, text, opts) {
+							if(err) throw err;
+							bot.sendMessage(chatId, text, opts);
+						});
+					}
+				});
+			}
 			break;
 		}
 		case commands.help: {
@@ -52,7 +72,10 @@ bot.on('message', function(msg) {
 			break;
 		}
 		case commands.viewSchedule: {
-			bot.sendMessage(chatId, ...bot_actions.getSchedule(msg));
+			bot_actions.getSchedule(msg, function(err, text, opts) {
+				if(err) throw err;
+				bot.sendMessage(chatId, text, opts);
+			})
 			break;
 		}
 		case commands.onToday: {
@@ -120,47 +143,65 @@ bot.on('message', function(msg) {
 			currentMsg = msg.text;
 			if(previousMsg === '🛠 Изменение настроек' && currentMsg === '🔙 Назад') {
 				userParams = [];
-				editMessageParams = bot_actions.repeatChangeSettings(msg);
-				bot.editMessageText(...editMessageParams);
+				bot_actions.prevChangeSettingsReset(msg, function(err, text, opts) {
+					if(err) throw err;
+					bot.editMessageText(text, opts);
+				});
 			}
 			previousMsg = '';
 			currentMsg = '';
-			bot.sendMessage(chatId, ...bot_actions.doAction());
-			break;
-		}
-		case commands.settings: {
-			bot_actions.getSettings(connection, chatId, function(err, text, opts) {
-				if (err) throw err;
+			bot_actions.doAction(function(err, text, opts) {
+				if(err) throw err;
 				bot.sendMessage(chatId, text, opts);
 			});
 			break;
 		}
+		case commands.settings: {
+			user_model.getUser(connection, chatId, function(err, user) {
+				if (err) throw err;
+				if (user[0] === undefined) {
+					bot_actions.reReg(msg.from.first_name, function(err, text) {
+						if(err) throw err;
+						bot.sendMessage(chatId, text);
+					})
+				} else {
+					bot_actions.getSettings(connection, chatId, function(err, text, opts) {
+						if (err) throw err;
+						bot.sendMessage(chatId, text, opts);
+					});
+				}
+			});
+			break;
+		}
 		case commands.changeSettings: {
-			facultyAlias = undefined;
-			course = undefined;
-			group = undefined;
-			if(currentMsg === '') {
-				currentMsg += msg.text;
-			} else {
-				previousMsg = currentMsg;
-			}
+			facultyAlias = undefined, course = undefined, group = undefined;
 			if(currentMsg === previousMsg) {
-				editMessageParams = bot_actions.repeatChangeSettings(msg);
-				bot.editMessageText(...editMessageParams);
+				bot_actions.prevChangeSettingsReset(msg, function(err, text, opts) {
+					if(err) throw err;
+					bot.editMessageText(text, opts);
+				});
 			}
-			bot.sendMessage(chatId, ...bot_actions.changeSettings(msg));
+			bot_actions.changeSettings(msg, function(err, text, opts) {
+				if(err) throw err;
+				bot.sendMessage(chatId, text, opts);
+			});
 			break;
 		}
 		default: {
-			previousMsg = currentMsg;
-			currentMsg = msg.text;
-			if(previousMsg === '🛠 Изменение настроек' && Object.values(commands).indexOf(currentMsg) === -1) {
-				editMessageParams = bot_actions.repeatChangeSettings(msg);
-				bot.editMessageText(...editMessageParams);
-			}
-			previousMsg = '';
-			currentMsg = '';
-			bot.sendMessage(chatId, ...bot_actions.stub(msg));
+			bot_actions.stub(function(err, text, opts) {
+				if(err) throw err;
+				previousMsg = currentMsg;
+				currentMsg = msg.text;
+				if(previousMsg === '🛠 Изменение настроек' && Object.values(commands).indexOf(currentMsg) === -1) {
+					bot_actions.prevChangeSettingsReset(msg, function(err, text, opts) {
+						if(err) throw err;
+						bot.editMessageText(text, opts);
+					});
+				}
+				previousMsg = '';
+				currentMsg = '';
+				bot.sendMessage(chatId, text, opts);
+				})
 			break;
 		}
 	}
@@ -185,15 +226,14 @@ bot.on('callback_query', function (callbackQuery) {
 					user_model.getUserData(connection, group_id, function(err, userData) {
 						if (err) throw err;
 						if (userData[0] !== undefined) {
-							let facultyName = userData[0].f_name;
-							editMessageParams = bot_actions.saveQuestion(msg, facultyName, course, group);
-							bot.editMessageText(...editMessageParams);
+							bot_actions.saveQuestion(msg, userData[0].f_name, course, group, function(err, text, opts) {
+								bot.editMessageText(text, opts);
+							});
 						}
 					});
 				});
 			};
 		});
-
 	}
 	
 	if(facultyAlias !== undefined && course === undefined) {
@@ -226,43 +266,55 @@ bot.on('callback_query', function (callbackQuery) {
 			if(user[0] === undefined) {
 				settings_model.insertUserData(connection, userParams[0], userParams[1], function(err, result) {
 					if (err) throw err;
-					if(result.affectedRows != 0) {
-						editMessageParams = bot_actions.saveSettings(true, msg);
-						bot.editMessageText(...editMessageParams);
-						bot.sendMessage(chatId, ...bot_actions.doAction());
+					if(result.affectedRows === 0) {
 						userParams = [];
-					} else {
-						editMessageParams = bot_actions.saveSettings(false, msg);
-						userParams = [];
-						bot.editMessageText(...editMessageParams);
+						bot_actions.saveSettingsError(msg, function(err, text, opts) {
+							if(err) throw err;
+							bot.editMessageText(text, opts);
+						});
 					}
+					userParams = [];
+					bot_actions.saveSettingsSuccess(msg, function(err, text, opts) {
+						if(err) throw err;
+						bot.editMessageText(text, opts);
+					});
+					bot_actions.doAction(function(err, text, opts) {
+						if(err) throw err;
+						bot.sendMessage(chatId, text, opts);
+					});
 				});				
 			} else {
 				settings_model.updateUserData(connection, userParams[0], userParams[1], function(err, result) {
 					if (err) throw err;
-					if(result.affectedRows != 0) {
-						editMessageParams = bot_actions.saveSettings(true, msg);
-						bot.editMessageText(...editMessageParams);
-						bot.sendMessage(chatId, ...bot_actions.doAction());
+					if(result.affectedRows === 0) {
 						userParams = [];
-						currentMsg = '';
-						previousMsg = '';
-					} else {
-						editMessageParams = bot_actions.saveSettings(false, msg);
-						userParams = [];
-						bot.editMessageText(...editMessageParams);
+						bot_actions.saveSettingsError(msg, function(err, text, opts) {
+							if(err) throw err;
+							bot.editMessageText(text, opts);
+						});
 					}
+					userParams = [];
+					currentMsg = '';
+					previousMsg = '';
+					bot_actions.saveSettingsSuccess(msg, function(err, text, opts) {
+						if(err) throw err;
+						bot.editMessageText(text, opts);
+					});
+					bot_actions.doAction(function(err, text, opts) {
+						if(err) throw err;
+						bot.sendMessage(chatId, text, opts);
+					});
 				});
 			}
 		});
 	}
 
 	if(action === '!save') {
-		facultyAlias = undefined;
-		course = undefined;
-		group = undefined;
-		editMessageParams = bot_actions.changeSettings(msg);
-		bot.editMessageText(...editMessageParams);
+		facultyAlias = undefined, course = undefined, group = undefined;
+		bot_actions.changeSettings(msg, function(err, text, opts) {
+			if(err) throw err;
+			bot.editMessageText(text, opts);
+		});
 	}
 });
 

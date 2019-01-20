@@ -1,27 +1,27 @@
 const keyboards = require('../keyboards/keyboards.js'),
 	user_model = require('../model/user.js');
 
-function stub() {
+function stub(callback) {
 	let text = 'Извините, я не умею работать с произвольными сообщениями... Выберите одну из категорий, представленных на клавиатуре.';
 	let opts = {
 		reply_markup: {
 			keyboard: keyboards.userKeyboard
 		}
 	}
-	return [text, opts];
+	callback(null, text, opts);
 }
 
-function doAction() {
+function doAction(callback) {
 	let text = 'Выберите категорию.';
 	let opts = {
 		reply_markup: {
 			keyboard: keyboards.userKeyboard
 		}
 	}
-	return [text, opts];
+	callback(null, text, opts);
 }
 
-function getSchedule(msg) {
+function getSchedule(msg, callback) {
 	let text = 'Какое расписание вы бы хотели посмотреть?';
 	let opts = {
 		chat_id: msg.chat.id,
@@ -30,17 +30,64 @@ function getSchedule(msg) {
 			keyboard: keyboards.scheduleKeyboard
 		}
 	}
-	return [text, opts];
+	callback(null, text, opts);
 }
 
-function chooseFaculty() {
-	let text = 'Приветствую! Укажите свой факультет.';
+function getSettings(connection, chatId, callback) {
+	user_model.getUser(connection, chatId, function(err, user) {
+		if (err) throw err
+		if (user[0] !== undefined) {
+			user_model.getUserData(connection, user[0].group_id, function(err, userData) {
+				if (err) throw err;
+				if (userData[0] !== undefined) {
+					let text = `Ваши текущие параметры:\nФакультет: ${userData[0].f_name}\nКурс: ${userData[0].course}\nГруппа: ${userData[0].g_name}\nЧто вы хотите сделать далее?`;
+					let opts = {
+						chat_id: chatId,
+						reply_markup: {
+							keyboard: keyboards.userSettingsKeyboard
+						}
+					}
+					callback(null, text, opts);
+				}
+			});
+		}
+	});
+}
+
+function reReg(first_name, callback) {
+	let text = `${first_name}, пожалуйста, пройдите повторную настройку введя команду /start.`;
+	callback(null, text);
+}
+
+function prevChangeSettingsReset(msg, callback) {
+	let text = 'Данный диалог настройки был отменен.';
+	let opts = {
+		chat_id: msg.chat.id,
+		message_id: msg.message_id-1
+	}
+	callback(null, text, opts);
+}
+
+function changeSettings(msg, callback) {
+	let text = 'Приступим. Выберите факультет.';
+	let opts = {
+		chat_id: msg.chat.id,
+		message_id: msg.message_id,
+		reply_markup: {
+			inline_keyboard: keyboards.facultyChooseKeyboard
+		}
+	}
+	callback(null, text, opts);
+}
+
+function chooseFaculty(first_name, callback) {
+	let text = `Приветствую, ${first_name}! Укажите свой факультет.`;
 	let opts = {
 		reply_markup: {
 			inline_keyboard: keyboards.facultyChooseKeyboard
 		}
 	}
-	return [text, opts];
+	callback(null, text, opts);
 }
 
 function chooseCourse(connection, msg, facultyAlias, callback) {
@@ -77,7 +124,7 @@ function chooseGroup(connection, msg, facultyAlias, course, callback) {
 	});
 }
 
-function saveQuestion(msg, facultyName, course, group) {
+function saveQuestion(msg, facultyName, course, group, callback) {
 	let text = 'Настройка завершена. Новые параметры:\nФакультет: ' +facultyName+ '\nКурс: ' +course+ '\nГруппа: ' +group+ '\nСохранить установленные параметры?';
 	let opts = {
 		chat_id: msg.chat.id,
@@ -86,53 +133,20 @@ function saveQuestion(msg, facultyName, course, group) {
 			inline_keyboard: keyboards.saveKeyboard
 		}
 	}
-	return [text, opts];
+	callback(null, text, opts);
 }
 
-function getSettings(connection, chatId, callback) {
-	user_model.getUser(connection, chatId, function(err, user) {
-		if (err) throw err
-		if (user[0] !== undefined) {
-			user_model.getUserData(connection, user[0].group_id, function(err, userData) {
-				if (err) throw err;
-				if (userData[0] !== undefined) {
-					let text = `Ваши текущие параметры:\nФакультет: ${userData[0].f_name}\nКурс: ${userData[0].course}\nГруппа: ${userData[0].g_name}\nЧто вы хотите сделать далее?`;
-					let opts = {
-						chat_id: chatId,
-						reply_markup: {
-							keyboard: keyboards.userSettingsKeyboard
-						}
-					}
-					callback(null, text, opts);
-				}
-			});
-		}
-	});
-}
-
-function saveSettings(success, msg) {
-	if(success === true) {
-		let text = 'Отлично! Новые параметры сохранены.';
-		let opts = {
-			chat_id: msg.chat.id,
-			message_id: msg.message_id
-		}
-	return [text, opts];
-	} else {
-		let text = 'Упс... Что-то пошло не так. Предлагаю пройти настройку заново';
-		let opts = {
-			chat_id: msg.chat.id,
-			message_id: msg.message_id,
-			reply_markup: {
-				inline_keyboard: [keyboards.facultyChooseFirstrow, keyboards.facultyChooseSecondRow, keyboards.facultyChooseThirdRow]
-			}
-		}
-	return [text, opts];
+function saveSettingsSuccess(msg, callback) {
+	let text = 'Отлично! Новые параметры сохранены.';
+	let opts = {
+		chat_id: msg.chat.id,
+		message_id: msg.message_id
 	}
+	callback(null, text, opts);
 }
 
-function changeSettings(msg) {
-	let text = 'Приступим. Выберите факультет.';
+function saveSettingsError(msg, callback) {
+	let text = 'Упс... Что-то пошло не так. Предлагаю пройти настройку заново';
 	let opts = {
 		chat_id: msg.chat.id,
 		message_id: msg.message_id,
@@ -140,16 +154,7 @@ function changeSettings(msg) {
 			inline_keyboard: keyboards.facultyChooseKeyboard
 		}
 	}
-	return [text, opts];
-}
-
-function repeatChangeSettings(msg) {
-	let text = 'Данный диалог настройки был отменен.';
-	let opts = {
-		chat_id: msg.chat.id,
-		message_id: msg.message_id-1
-	}
-	return [text, opts];
+	callback(null, text, opts);
 }
 
 function onTodaySchedule(schedule, msg) {
@@ -198,6 +203,7 @@ function getScheduleMsgOpts(msg) {
 	return opts;
 }
 
-module.exports = {stub, doAction, getSchedule, getSettings,
-		chooseFaculty, chooseCourse, chooseGroup, saveQuestion, saveSettings, changeSettings, repeatChangeSettings,
+module.exports = {stub, reReg, doAction, getSchedule, getSettings,
+		chooseFaculty, chooseCourse, chooseGroup, 
+		saveQuestion, saveSettingsSuccess, saveSettingsError, changeSettings, prevChangeSettingsReset,
 		onTodaySchedule, onTomorrowSchedule, onCurWeekSchedule, onNextWeekSchedule}

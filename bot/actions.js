@@ -33,25 +33,50 @@ function getSchedule(msg, callback) {
 	callback(null, text, opts);
 }
 
-function getSettings(connection, chatId, callback) {
-	user_model.getUser(connection, chatId, function(err, user) {
-		if (err) throw err
-		if (user[0] !== undefined) {
-			user_model.getUserData(connection, user[0].group_id, function(err, userData) {
-				if (err) throw err;
-				if (userData[0] !== undefined) {
-					let text = `Ваши текущие параметры:\nФакультет: ${userData[0].f_name}\nКурс: ${userData[0].course}\nГруппа: ${userData[0].g_name}\nЧто вы хотите сделать далее?`;
-					let opts = {
-						chat_id: chatId,
-						reply_markup: {
-							keyboard: keyboards.userSettingsKeyboard
+function getSettings(connection, chatId) {
+	return new Promise((resolve, reject) => {
+		try {
+			user_model.getUser(connection, chatId).then(user => {
+				if (user[0] === undefined) { 
+					return;
+				}
+				try {
+					user_model.getUserData(connection, user[0].group_id).then(userData => {
+						if (userData[0] === undefined) {
+							return;
 						}
-					}
-					callback(null, text, opts);
+						let text = `Ваши текущие параметры:\nФакультет: ${userData[0].f_name}\nКурс: ${userData[0].course}\nГруппа: ${userData[0].g_name}\nЧто вы хотите сделать далее?`;
+						let opts = {
+							chat_id: chatId,
+							reply_markup: {
+								keyboard: keyboards.userSettingsKeyboard
+							}
+						}
+						resolve([text, opts]);
+					});
+				} catch (err) {
+					console.error('Error: ' + err);
+					return reject(err);
 				}
 			});
+		} catch (err) {
+			console.log('Error: ' + err);
+			return reject(err);
 		}
 	});
+			// user_model.getUserData(connection, user[0].group_id, function(err, userData) {
+			// 	if (err) throw err;
+			// 	if (userData[0] !== undefined) {
+			// 		let text = `Ваши текущие параметры:\nФакультет: ${userData[0].f_name}\nКурс: ${userData[0].course}\nГруппа: ${userData[0].g_name}\nЧто вы хотите сделать далее?`;
+			// 		let opts = {
+			// 			chat_id: chatId,
+			// 			reply_markup: {
+			// 				keyboard: keyboards.userSettingsKeyboard
+			// 			}
+			// 		}
+			// 		callback(null, text, opts);
+			// 	}
+			// });
 }
 
 function reReg(first_name, callback) {

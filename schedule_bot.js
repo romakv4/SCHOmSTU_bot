@@ -50,20 +50,23 @@ bot.on('message', function(msg) {
 					bot.sendMessage(chatId, text, opts);
 				});
 			} else {
-				user_model.getUser(connection, chatId, function(err, user) {
-					if (err) throw err;
-					if (user[0] === undefined) {
-						bot_actions.chooseFaculty(msg.from.first_name, function(err, text, opts) {
-							if(err) throw err;
-							bot.sendMessage(chatId, text, opts);
-						})
-					} else {
-						bot_actions.doAction(function(err, text, opts) {
-							if(err) throw err;
-							bot.sendMessage(chatId, text, opts);
-						});
-					}
-				});
+				try {
+					user_model.getUser(connection, chatId).then(user => {
+						if (user[0] === undefined) {
+							bot_actions.chooseFaculty(msg.from.first_name, function(err, text, opts) {
+								if(err) throw err;
+								bot.sendMessage(chatId, text, opts);
+							})
+						} else {
+							bot_actions.doAction(function(err, text, opts) {
+								if(err) throw err;
+								bot.sendMessage(chatId, text, opts);
+							});
+						}
+					});
+				} catch(err) {
+					console.error('Error: ' + err);
+				}
 			}
 			break;
 		}
@@ -79,63 +82,95 @@ bot.on('message', function(msg) {
 			break;
 		}
 		case commands.onToday: {
-			user_model.getUser(connection, chatId, function(err, user) {
-				if (err) throw err;
-				if (user[0] !== undefined) {
-					user_model.getUserData(connection, user[0].group_id, function(err, userData) {
-						if (err) throw err;
-						if (userData[0] !== undefined) {
+			try {
+				user_model.getUser(connection, chatId).then(user => {
+					if (user[0] === undefined) {
+						return;
+					}
+					try {
+						user_model.getUserData(connection, user[0].group_id).then(userData => {
+							if (userData[0] === undefined) {
+								return;
+							}
 							let schedule = schedule_getter.getTodaySchedule(userData[0].group_oid);
 							bot.sendMessage(chatId, ...bot_actions.onTodaySchedule(schedule, msg));
-						}
-					});
-				}
-			});
+						});
+					} catch (err) {
+						console.error('Error: ' + err);
+					}
+				});
+			} catch (err) {
+				console.log('Error: ' + err);
+			}
 			break;
 		}
 		case commands.onTomorrow: {
-			user_model.getUser(connection, chatId, function(err, user) {
-				if (err) throw err;
-				if (user[0] !== undefined) {
-					user_model.getUserData(connection, user[0].group_id, function(err, userData) {
-						if (err) throw err;
-						if (userData[0] !== undefined) {
+			try {
+				user_model.getUser(connection, chatId).then(user => {
+					if (user[0] === undefined) {
+						return;
+					}
+					try {
+						user_model.getUserData(connection, user[0].group_id).then(userData => {
+							if (userData[0] === undefined) {
+								return;
+							}
 							let schedule = schedule_getter.getTomorrowSchedule(userData[0].group_oid);
 							bot.sendMessage(chatId, ...bot_actions.onTomorrowSchedule(schedule, msg));
-						}
-					});
-				}
-			});
+						});
+					} catch (err) {
+						console.error('Error: ' + err);
+					}
+				});
+			} catch (err) {
+				console.log('Error: ' + err);
+			}
 			break;
 		}
 		case commands.onCurrentWeek: {
-			user_model.getUser(connection, chatId, function(err, user) {
-				if (err) throw err;
-				if (user[0] !== undefined) {
-					user_model.getUserData(connection, user[0].group_id, function(err, userData) {
-						if (err) throw err;
-						if (userData[0] !== undefined) {
+			try {
+				user_model.getUser(connection, chatId).then(user => {
+					if (user[0] === undefined) {
+						return;
+					}
+					try {
+						user_model.getUserData(connection, user[0].group_id).then(userData => {
+							if (userData[0] === undefined) {
+								return;
+							}
 							let schedule = schedule_getter.getCurWeekSchedule(userData[0].group_oid);
 							bot.sendMessage(chatId, ...bot_actions.onCurWeekSchedule(schedule, msg));
-						}
-					});
-				}
-			});
+						});
+					} catch (err) {
+						console.error('Error: ' + err);
+					}
+				});
+			} catch (err) {
+				console.log('Error: ' + err);
+			}
 			break;
 		}
 		case commands.onNextWeek: {
-			user_model.getUser(connection, chatId, function(err, user) {
-				if (err) throw err;
-				if (user[0] !== undefined) {
-					user_model.getUserData(connection, user[0].group_id, function(err, userData) {
-						if (err) throw err;
-						if (userData[0] !== undefined) {
+			try {
+				user_model.getUser(connection, chatId).then(user => {
+					if (user[0] === undefined) {
+						return;
+					}
+					try {
+						user_model.getUserData(connection, user[0].group_id).then(userData => {
+							if (userData[0] === undefined) {
+								return;
+							}
 							let schedule = schedule_getter.getNextWeekSchedule(userData[0].group_oid);
 							bot.sendMessage(chatId, ...bot_actions.onNextWeekSchedule(schedule, msg));
-						}
-					});
-				}
-			});
+						});
+					} catch (err) {
+						console.error('Error: ' + err);
+					}
+				});
+			} catch (err) {
+				console.log('Error: ' + err);
+			}
 			break;
 		}
 		case commands.back: {
@@ -157,20 +192,22 @@ bot.on('message', function(msg) {
 			break;
 		}
 		case commands.settings: {
-			user_model.getUser(connection, chatId, function(err, user) {
-				if (err) throw err;
-				if (user[0] === undefined) {
-					bot_actions.reReg(msg.from.first_name, function(err, text) {
-						if(err) throw err;
-						bot.sendMessage(chatId, text);
-					})
-				} else {
-					bot_actions.getSettings(connection, chatId, function(err, text, opts) {
-						if (err) throw err;
-						bot.sendMessage(chatId, text, opts);
-					});
-				}
-			});
+			try {
+				user_model.getUser(connection, chatId).then(user => {
+					if (user[0] === undefined) {
+						bot_actions.reReg(msg.from.first_name, function(err, text) {
+							if(err) throw err;
+							bot.sendMessage(chatId, text);
+						});
+					} else {
+						bot_actions.getSettings(connection, chatId).then(msgOpts => {
+							bot.sendMessage(chatId, ...msgOpts);
+						});
+					}
+				});
+			} catch (err) {
+				console.log('Error: ' + err);
+			}
 			break;
 		}
 		case commands.changeSettings: {
@@ -223,14 +260,18 @@ bot.on('callback_query', function (callbackQuery) {
 					if (err) throw err;
 					userParams.push(group_id);
 					userParams.push(msg.chat.id);
-					user_model.getUserData(connection, group_id, function(err, userData) {
-						if (err) throw err;
-						if (userData[0] !== undefined) {
+					try {
+						user_model.getUserData(connection, user[0].group_id).then(userData => {
+							if (userData[0] === undefined) {
+								return;
+							}
 							bot_actions.saveQuestion(msg, userData[0].f_name, course, group, function(err, text, opts) {
 								bot.editMessageText(text, opts);
 							});
-						}
-					});
+						});
+					} catch (err) {
+						console.error('Error: ' + err);
+					}
 				});
 			};
 		});
@@ -261,52 +302,55 @@ bot.on('callback_query', function (callbackQuery) {
 
 		let chatId = msg.chat.id;
 
-		user_model.getUser(connection, chatId, function(err, user) {
-			if (err) throw err;
-			if(user[0] === undefined) {
-				settings_model.insertUserData(connection, userParams[0], userParams[1], function(err, result) {
-					if (err) throw err;
-					if(result.affectedRows === 0) {
+		try {
+			user_model.getUser(connection, chatId).then(user => {
+				if (user[0] === undefined) {
+					settings_model.insertUserData(connection, userParams[0], userParams[1], function(err, result) {
+						if (err) throw err;
+						if(result.affectedRows === 0) {
+							userParams = [];
+							bot_actions.saveSettingsError(msg, function(err, text, opts) {
+								if(err) throw err;
+								bot.editMessageText(text, opts);
+							});
+						}
 						userParams = [];
-						bot_actions.saveSettingsError(msg, function(err, text, opts) {
+						bot_actions.saveSettingsSuccess(msg, function(err, text, opts) {
 							if(err) throw err;
 							bot.editMessageText(text, opts);
 						});
-					}
-					userParams = [];
-					bot_actions.saveSettingsSuccess(msg, function(err, text, opts) {
-						if(err) throw err;
-						bot.editMessageText(text, opts);
-					});
-					bot_actions.doAction(function(err, text, opts) {
-						if(err) throw err;
-						bot.sendMessage(chatId, text, opts);
-					});
-				});				
-			} else {
-				settings_model.updateUserData(connection, userParams[0], userParams[1], function(err, result) {
-					if (err) throw err;
-					if(result.affectedRows === 0) {
+						bot_actions.doAction(function(err, text, opts) {
+							if(err) throw err;
+							bot.sendMessage(chatId, text, opts);
+						});
+					});	
+				} else {
+					settings_model.updateUserData(connection, userParams[0], userParams[1], function(err, result) {
+						if (err) throw err;
+						if(result.affectedRows === 0) {
+							userParams = [];
+							bot_actions.saveSettingsError(msg, function(err, text, opts) {
+								if(err) throw err;
+								bot.editMessageText(text, opts);
+							});
+						}
 						userParams = [];
-						bot_actions.saveSettingsError(msg, function(err, text, opts) {
+						currentMsg = '';
+						previousMsg = '';
+						bot_actions.saveSettingsSuccess(msg, function(err, text, opts) {
 							if(err) throw err;
 							bot.editMessageText(text, opts);
 						});
-					}
-					userParams = [];
-					currentMsg = '';
-					previousMsg = '';
-					bot_actions.saveSettingsSuccess(msg, function(err, text, opts) {
-						if(err) throw err;
-						bot.editMessageText(text, opts);
+						bot_actions.doAction(function(err, text, opts) {
+							if(err) throw err;
+							bot.sendMessage(chatId, text, opts);
+						});
 					});
-					bot_actions.doAction(function(err, text, opts) {
-						if(err) throw err;
-						bot.sendMessage(chatId, text, opts);
-					});
-				});
-			}
-		});
+				}
+			});
+		} catch (err) {
+			console.log('Error: ' + err);
+		}
 	}
 
 	if(action === '!save') {
@@ -317,13 +361,3 @@ bot.on('callback_query', function (callbackQuery) {
 		});
 	}
 });
-
-//Utilite method for debugging. Dont use in the bot.
-function strToHex(str) {
-	var hexArr = [];
-	for (var n = 0, l = str.length; n < l; n ++) {
-		var hex = Number(str.charCodeAt(n)).toString(16);
-		hexArr.push(hex);
-	}
-	return hexArr.join('');
-}

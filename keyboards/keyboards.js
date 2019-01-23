@@ -58,33 +58,25 @@ let facultyChooseKeyboard =
 		]
 	];
 
-async function getCourseKeyboard(connection, facultyAlias) {
-	try {
-		const courses = await settings_model.getCourses(connection, facultyAlias);
-			if (courses.length !== 0) {
-				let chooseCourseKeyboard = [];
-				for(let i = 0; i < courses.length; i++) {
-					chooseCourseKeyboard.push({text:courses[i].course, callback_data:String(courses[i].course)});
-				}
-				return chooseCourseKeyboard;	
-			}
-	} catch (err) {
-		console.error('Error: ' + err);
+const getCourseKeyboard = async(connection, facultyAlias) => {
+	const courses = await settings_model.getCourses(connection, facultyAlias);
+	if (courses.length !== 0) {
+		let chooseCourseKeyboard = [];
+		for(let i = 0; i < courses.length; i++) {
+			chooseCourseKeyboard.push({text:courses[i].course, callback_data:String(courses[i].course)});
+		}
+		return chooseCourseKeyboard;
 	}
 }
 
-async function getGroupKeyboard(connection, facultyAlias, course) {
-	try {
-		const groups = await settings_model.getGroups(connection, facultyAlias, course);
-		if(groups.length !== 0) {
-			let chooseGroupKeyboard = [];
-			for (let i = 0; i < groups.length; i++) {
-				chooseGroupKeyboard.push([{text:groups[i].g_name, callback_data:groups[i].g_name}]);
-			}
-			return chooseGroupKeyboard;
+const getGroupKeyboard = async(connection, facultyAlias, course) => {
+	const groups = await settings_model.getGroups(connection, facultyAlias, course);
+	if(groups.length !== 0) {
+		let chooseGroupKeyboard = [];
+		for (let i = 0; i < groups.length; i++) {
+			chooseGroupKeyboard.push([{text:groups[i].g_name, callback_data:groups[i].g_name}]);
 		}
-	} catch (err) {
-		console.error('Error: ' + err);
+		return chooseGroupKeyboard;
 	}
 }
 

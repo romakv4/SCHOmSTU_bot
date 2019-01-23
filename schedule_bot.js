@@ -45,17 +45,13 @@ bot.on('message', function(msg) {
 				bot.editMessageText(...bot_actions.prevChangeSettingsReset(msg));
 				bot.sendMessage(chatId, ...bot_actions.chooseFaculty(msg.from.first_name));
 			} else {
-				try {
-					user_model.getUser(connection, chatId).then(user => {
-						if (user[0] === undefined) {
-							bot.sendMessage(chatId, ...bot_actions.chooseFaculty(msg.from.first_name));
-						} else {
-							bot.sendMessage(chatId, ...bot_actions.doAction());
-						}
-					});
-				} catch (err) {
-					console.error('Error: ' + err);
-				}
+				user_model.getUser(connection, chatId).then(user => {
+					if (user[0] === undefined) {
+						bot.sendMessage(chatId, ...bot_actions.chooseFaculty(msg.from.first_name));
+					} else {
+						bot.sendMessage(chatId, ...bot_actions.doAction());
+					}
+				}).catch((err) => console.error('Error: ' + err));
 			}
 			break;
 		}
@@ -68,95 +64,63 @@ bot.on('message', function(msg) {
 			break;
 		}
 		case commands.onToday: {
-			try {
-				user_model.getUser(connection, chatId).then(user => {
-					if (user[0] === undefined) {
+			user_model.getUser(connection, chatId).then(user => {
+				if (user[0] === undefined) {
+					return;
+				}
+				user_model.getUserData(connection, user[0].group_id).then(userData => {
+					if (userData[0] === undefined) {
 						return;
 					}
-					try {
-						user_model.getUserData(connection, user[0].group_id).then(userData => {
-							if (userData[0] === undefined) {
-								return;
-							}
-							let schedule = schedule_getter.getTodaySchedule(userData[0].group_oid);
-							bot.sendMessage(chatId, ...bot_actions.onTodaySchedule(schedule, msg));
-						});
-					} catch (err) {
-						console.error('Error: ' + err);
-					}
-				});
-			} catch (err) {
-				console.log('Error: ' + err);
-			}
+					let schedule = schedule_getter.getTodaySchedule(userData[0].group_oid);
+					bot.sendMessage(chatId, ...bot_actions.onTodaySchedule(schedule, msg));
+				}).catch ((err) => console.error('Error: ' + err));
+			}).catch ((err) => console.error('Error: ' + err));
 			break;
 		}
 		case commands.onTomorrow: {
-			try {
-				user_model.getUser(connection, chatId).then(user => {
-					if (user[0] === undefined) {
+			user_model.getUser(connection, chatId).then(user => {
+				if (user[0] === undefined) {
+					return;
+				}
+				user_model.getUserData(connection, user[0].group_id).then(userData => {
+					if (userData[0] === undefined) {
 						return;
 					}
-					try {
-						user_model.getUserData(connection, user[0].group_id).then(userData => {
-							if (userData[0] === undefined) {
-								return;
-							}
-							let schedule = schedule_getter.getTomorrowSchedule(userData[0].group_oid);
-							bot.sendMessage(chatId, ...bot_actions.onTomorrowSchedule(schedule, msg));
-						});
-					} catch (err) {
-						console.error('Error: ' + err);
-					}
-				});
-			} catch (err) {
-				console.log('Error: ' + err);
-			}
+					let schedule = schedule_getter.getTomorrowSchedule(userData[0].group_oid);
+					bot.sendMessage(chatId, ...bot_actions.onTomorrowSchedule(schedule, msg));
+				}).catch ((err) => console.error('Error: ' + err));
+			}).catch ((err) => console.error('Error: ' + err));
 			break;
 		}
 		case commands.onCurrentWeek: {
-			try {
-				user_model.getUser(connection, chatId).then(user => {
-					if (user[0] === undefined) {
+			user_model.getUser(connection, chatId).then(user => {
+				if (user[0] === undefined) {
+					return;
+				}
+				user_model.getUserData(connection, user[0].group_id).then(userData => {
+					if (userData[0] === undefined) {
 						return;
 					}
-					try {
-						user_model.getUserData(connection, user[0].group_id).then(userData => {
-							if (userData[0] === undefined) {
-								return;
-							}
-							let schedule = schedule_getter.getCurWeekSchedule(userData[0].group_oid);
-							bot.sendMessage(chatId, ...bot_actions.onCurWeekSchedule(schedule, msg));
-						});
-					} catch (err) {
-						console.error('Error: ' + err);
-					}
-				});
-			} catch (err) {
-				console.log('Error: ' + err);
-			}
+					let schedule = schedule_getter.getCurWeekSchedule(userData[0].group_oid);
+					bot.sendMessage(chatId, ...bot_actions.onCurWeekSchedule(schedule, msg));
+				}).catch ((err) => console.error('Error: ' + err));
+			}).catch ((err) => console.error('Error: ' + err));
 			break;
 		}
 		case commands.onNextWeek: {
-			try {
-				user_model.getUser(connection, chatId).then(user => {
-					if (user[0] === undefined) {
+			user_model.getUser(connection, chatId).then(user => {
+				if (user[0] === undefined) {
+					return;
+				}
+				user_model.getUserData(connection, user[0].group_id).then(userData => {
+					if (userData[0] === undefined) {
 						return;
 					}
-					try {
-						user_model.getUserData(connection, user[0].group_id).then(userData => {
-							if (userData[0] === undefined) {
-								return;
-							}
-							let schedule = schedule_getter.getNextWeekSchedule(userData[0].group_oid);
-							bot.sendMessage(chatId, ...bot_actions.onNextWeekSchedule(schedule, msg));
-						});
-					} catch (err) {
-						console.error('Error: ' + err);
-					}
-				});
-			} catch (err) {
-				console.log('Error: ' + err);
-			}
+					let schedule = schedule_getter.getNextWeekSchedule(userData[0].group_oid);
+					bot.sendMessage(chatId, ...bot_actions.onNextWeekSchedule(schedule, msg));
+				}).catch ((err) => console.error('Error: ' + err));
+			}).catch ((err) => console.error('Error: ' + err));
 			break;
 		}
 		case commands.back: {
@@ -168,20 +132,15 @@ bot.on('message', function(msg) {
 			break;
 		}
 		case commands.settings: {
-			try {
-				user_model.getUser(connection, chatId).then(user => {
-					if (user[0] === undefined) {
-						bot.sendMessage(chatId, bot_actions.reReg(msg.from.first_name));
-					} else {
-						(async () => {
-							const msgParams = await bot_actions.getSettings(connection, chatId);
-							bot.sendMessage(chatId, ...msgParams);
-						})();
-					}
-				});
-			} catch (err) {
-				console.log('Error: ' + err);
-			}
+			user_model.getUser(connection, chatId).then(user => {
+				if (user[0] === undefined) {
+					bot.sendMessage(chatId, bot_actions.reReg(msg.from.first_name));
+				} else {
+					bot_actions.getSettings(connection, chatId).then(msgParams => {
+						bot.sendMessage(chatId, ...msgParams);
+					}).catch ((err) => console.error('Error: ' + err));
+				}
+			}).catch ((err) => console.error('Error: ' + err));
 			break;
 		}
 		case commands.changeSettings: {
@@ -211,92 +170,70 @@ bot.on('callback_query', function (callbackQuery) {
 
 	if (facultyAlias !== undefined && course !== undefined) {
 		group = action;
-		try {
-			keyboards.getGroupKeyboard(connection, facultyAlias, course).then(chooseGroupKeyboard => {
-				if (chooseGroupKeyboard.some(elem => elem[0].callback_data === action)) {
-					(async () => {
-						const group_id = await settings_model.getGroupId(connection, action);
-						if(group_id === undefined) {
+		keyboards.getGroupKeyboard(connection, facultyAlias, course).then(chooseGroupKeyboard => {
+			if (chooseGroupKeyboard.some(elem => elem[0].callback_data === action)) {
+				settings_model.getGroupId(connection, action).then(group_id => {
+					if(group_id === undefined) {
+						return;
+					}
+					userParams.push(group_id);
+					userParams.push(msg.chat.id);
+					user_model.getUserData(connection, group_id).then(userData => {
+						if (userData[0] === undefined) {
 							return;
 						}
-						userParams.push(group_id);
-						userParams.push(msg.chat.id);
-						try {
-							user_model.getUserData(connection, group_id).then(userData => {
-								if (userData[0] === undefined) {
-									return;
-								}
-								bot.editMessageText(...bot_actions.saveQuestion(msg, userData[0].f_name, course, group));
-							});
-						} catch (err) {
-							console.error('Error: ' + err);
-						}
-					})();
-				};
-			});
-		} catch (err) {
-			console.error('Error: ' + err);
-		}
+						bot.editMessageText(...bot_actions.saveQuestion(msg, userData[0].f_name, course, group));
+					}).catch ((err) => console.error('Error: ' + err));
+				}).catch ((err) => console.error('Error: ' + err));
+			}
+		}).catch ((err) => console.error('Error: ' + err));
 	}
 	
 	if (facultyAlias !== undefined && course === undefined) {
 		course = action;
-		(async () => {
-			const chooseCourseKeyboard = await keyboards.getCourseKeyboard(connection, facultyAlias);
+		keyboards.getCourseKeyboard(connection, facultyAlias).then(chooseCourseKeyboard => {
 			if (chooseCourseKeyboard.some(elem => elem.callback_data === action)) {
-				const msgParams = await bot_actions.chooseGroup(connection, msg, facultyAlias, action);
-				bot.editMessageText(...msgParams);
-			};
-		})();
+				bot_actions.chooseGroup(connection, msg, facultyAlias, action).then(msgParams => {
+					bot.editMessageText(...msgParams);
+				}).catch ((err) => console.error('Error: ' + err));
+			}
+		}).catch ((err) => console.error(err));
 	}
 	
 	if (facultyAlias === undefined, course === undefined) {
 		facultyAlias = action;
-		(async () => {
-			const msgParams = await bot_actions.chooseCourse(connection, msg, action);
+		bot_actions.chooseCourse(connection, msg, action).then(msgParams => {
 			bot.editMessageText(...msgParams);
-		})();
+		}).catch ((err) => console.error('Error: ' + err));
 	}
 
 	if (action === 'save') {
 
 		let chatId = msg.chat.id;
 
-		try {
-			user_model.getUser(connection, chatId).then(user => {
-				if (user[0] === undefined) {
-					try {
-						settings_model.insertUserData(connection, ...userParams).then(result => {
-							if (result.affectedRows === 0) {
-								userParams = [];
-								bot.editMessageText(...bot_actions.saveSettingsError(msg));
-							}
+		user_model.getUser(connection, chatId).then(user => {
+			if (user[0] === undefined) {
+					settings_model.insertUserData(connection, ...userParams).then(result => {
+						if (result.affectedRows === 0) {
 							userParams = [];
-							bot.editMessageText(...bot_actions.saveSettingsSuccess(msg));
-							bot.sendMessage(chatId, ...bot_actions.doAction());
-						});
-					}	catch (err) {
-						console.error('Error: ' + err);
-					}
-				} else {
-					try {
-						settings_model.updateUserData(connection, ...userParams).then(result => {
-							if (result.affectedRows === 0) {
-								userParams = [];
-								bot.editMessageText(...bot_actions.saveSettingsError(msg));
-							}
+							bot.editMessageText(...bot_actions.saveSettingsError(msg));
+						}
+						userParams = [];
+						bot.editMessageText(...bot_actions.saveSettingsSuccess(msg));
+						bot.sendMessage(chatId, ...bot_actions.doAction());
+					}).catch ((err) => console.error('Error: ' + err));
+			} else {
+					settings_model.updateUserData(connection, ...userParams).then(result => {
+						if (result.affectedRows === 0) {
 							userParams = [];
-							bot.editMessageText(...bot_actions.saveSettingsSuccess(msg));
-							bot.sendMessage(chatId, ...bot_actions.doAction());
-						});
-					} catch (err) {
-						console.error('Error: ' + err);
-					}
-				}
-			});
-		} catch (err) {
-			console.log('Error: ' + err);
-		}
+							bot.editMessageText(...bot_actions.saveSettingsError(msg));
+						}
+						userParams = [];
+						bot.editMessageText(...bot_actions.saveSettingsSuccess(msg));
+						bot.sendMessage(chatId, ...bot_actions.doAction());
+					}).catch ((err) => console.error('Error: ' + err));
+			}
+		}).catch ((err) => console.error('Error: ' + err));
 	}
 
 	if (action === '!save') {

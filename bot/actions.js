@@ -34,30 +34,22 @@ function getSchedule(msg) {
 }
 
 async function getSettings(connection, chatId) {
-		try {
-			const user = await user_model.getUser(connection, chatId);
-			if (user[0] === undefined) {
-				return;
+	const user = await user_model.getUser(connection, chatId);
+		if (user[0] === undefined) {
+			return;
+		}
+		const userData = await user_model.getUserData(connection, user[0].group_id);
+		if (userData[0] === undefined) {
+			return;
+		}
+		let text = `Ваши текущие параметры:\nФакультет: ${userData[0].f_name}\nКурс: ${userData[0].course}\nГруппа: ${userData[0].g_name}\nЧто вы хотите сделать далее?`;
+		let opts = {
+			chat_id: chatId,
+			reply_markup: {
+				keyboard: keyboards.userSettingsKeyboard
 			}
-			try {
-				const userData = await user_model.getUserData(connection, user[0].group_id);
-				if (userData[0] === undefined) {
-					return;
-				}
-				let text = `Ваши текущие параметры:\nФакультет: ${userData[0].f_name}\nКурс: ${userData[0].course}\nГруппа: ${userData[0].g_name}\nЧто вы хотите сделать далее?`;
-				let opts = {
-					chat_id: chatId,
-					reply_markup: {
-						keyboard: keyboards.userSettingsKeyboard
-					}
-				}
-				return [text, opts];
-			} catch (err) {
-				console.error('Error: ' + err);
-			}
-	} catch (err) {
-		console.error('Error: ' + err);
-	}
+		}
+	return [text, opts];
 }
 
 function reReg(first_name) {
@@ -96,41 +88,33 @@ function chooseFaculty(first_name) {
 	return [text, opts];
 }
 
-async function chooseCourse(connection, msg, facultyAlias) {
-	try {
-		const chooseCourseKeyboard = await keyboards.getCourseKeyboard(connection, facultyAlias);
-		if(chooseCourseKeyboard[0] !== undefined) {
-			let text = 'Отлично! Выберите курс.'
-			let opts = {
-				chat_id: msg.chat.id,
-				message_id: msg.message_id,
-				reply_markup: {
-					inline_keyboard: [chooseCourseKeyboard]
-				}
+const chooseCourse = async(connection, msg, facultyAlias) => {
+	const chooseCourseKeyboard = await keyboards.getCourseKeyboard(connection, facultyAlias);
+	if(chooseCourseKeyboard[0] !== undefined) {
+		let text = 'Отлично! Выберите курс.'
+		let opts = {
+			chat_id: msg.chat.id,
+			message_id: msg.message_id,
+			reply_markup: {
+				inline_keyboard: [chooseCourseKeyboard]
 			}
-			return [text, opts];
 		}
-	} catch (err) {
-		console.error('Error: ' + err);
+		return [text, opts];
 	}
 }
 
-async function chooseGroup(connection, msg, facultyAlias, course) {
-	try {
-		const chooseGroupKeyboard = await keyboards.getGroupKeyboard(connection, facultyAlias, course);
-		if(chooseGroupKeyboard[0] !== undefined) {
-			let text = 'Супер! Осталось выбрать группу.';
-			let opts = {
-				chat_id: msg.chat.id,
-				message_id: msg.message_id,
-				reply_markup: {
-					inline_keyboard: chooseGroupKeyboard
-				}
+const chooseGroup = async(connection, msg, facultyAlias, course) => {
+	const chooseGroupKeyboard = await keyboards.getGroupKeyboard(connection, facultyAlias, course);
+	if(chooseGroupKeyboard[0] !== undefined) {
+		let text = 'Супер! Осталось выбрать группу.';
+		let opts = {
+			chat_id: msg.chat.id,
+			message_id: msg.message_id,
+			reply_markup: {
+				inline_keyboard: chooseGroupKeyboard
 			}
-			return [text, opts];
 		}
-	} catch (err) {
-		console.error('Error: ' + err);
+		return [text, opts];
 	}
 }
 

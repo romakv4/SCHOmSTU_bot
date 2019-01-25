@@ -6,11 +6,13 @@ const TelegramBot = require('node-telegram-bot-api'),
 	schedule_getter = require('./schedule/schedule_getter.js'),
 	settings_model = require('./model/settings.js'),
 	user_model = require('./model/user.js'),
-	config = require('config');
+	config = require('config'),
+	promisify = require('util').promisify;
 
 const token = config.get("token");
 
 const connection = mysql.createConnection(config.get("db_config"));
+const query = promisify(connection.query).bind(connection);
 
 let bot = new TelegramBot(token, {
 	polling: true,
@@ -45,7 +47,7 @@ bot.on('message', function(msg) {
 				bot.editMessageText(...bot_actions.prevChangeSettingsReset(msg));
 				bot.sendMessage(chatId, ...bot_actions.chooseFaculty(msg.from.first_name));
 			} else {
-				user_model.getUser(connection, chatId).then(user => {
+				user_model.getUser(query, chatId).then(user => {
 					if (user[0] === undefined) {
 						bot.sendMessage(chatId, ...bot_actions.chooseFaculty(msg.from.first_name));
 					} else {
@@ -64,11 +66,11 @@ bot.on('message', function(msg) {
 			break;
 		}
 		case commands.onToday: {
-			user_model.getUser(connection, chatId).then(user => {
+			user_model.getUser(query, chatId).then(user => {
 				if (user[0] === undefined) {
 					return;
 				}
-				user_model.getUserData(connection, user[0].group_id).then(userData => {
+				user_model.getUserData(query, user[0].group_id).then(userData => {
 					if (userData[0] === undefined) {
 						return;
 					}
@@ -79,11 +81,11 @@ bot.on('message', function(msg) {
 			break;
 		}
 		case commands.onTomorrow: {
-			user_model.getUser(connection, chatId).then(user => {
+			user_model.getUser(query, chatId).then(user => {
 				if (user[0] === undefined) {
 					return;
 				}
-				user_model.getUserData(connection, user[0].group_id).then(userData => {
+				user_model.getUserData(query, user[0].group_id).then(userData => {
 					if (userData[0] === undefined) {
 						return;
 					}
@@ -94,11 +96,11 @@ bot.on('message', function(msg) {
 			break;
 		}
 		case commands.onCurrentWeek: {
-			user_model.getUser(connection, chatId).then(user => {
+			user_model.getUser(query, chatId).then(user => {
 				if (user[0] === undefined) {
 					return;
 				}
-				user_model.getUserData(connection, user[0].group_id).then(userData => {
+				user_model.getUserData(query, user[0].group_id).then(userData => {
 					if (userData[0] === undefined) {
 						return;
 					}
@@ -109,11 +111,11 @@ bot.on('message', function(msg) {
 			break;
 		}
 		case commands.onNextWeek: {
-			user_model.getUser(connection, chatId).then(user => {
+			user_model.getUser(query, chatId).then(user => {
 				if (user[0] === undefined) {
 					return;
 				}
-				user_model.getUserData(connection, user[0].group_id).then(userData => {
+				user_model.getUserData(query, user[0].group_id).then(userData => {
 					if (userData[0] === undefined) {
 						return;
 					}
@@ -132,11 +134,11 @@ bot.on('message', function(msg) {
 			break;
 		}
 		case commands.settings: {
-			user_model.getUser(connection, chatId).then(user => {
+			user_model.getUser(query, chatId).then(user => {
 				if (user[0] === undefined) {
 					bot.sendMessage(chatId, bot_actions.reReg(msg.from.first_name));
 				} else {
-					bot_actions.getSettings(connection, chatId).then(msgParams => {
+					bot_actions.getSettings(query, chatId).then(msgParams => {
 						bot.sendMessage(chatId, ...msgParams);
 					}).catch ((err) => console.error('Error: ' + err));
 				}
@@ -170,15 +172,15 @@ bot.on('callback_query', function (callbackQuery) {
 
 	if (facultyAlias !== undefined && course !== undefined) {
 		group = action;
-		keyboards.getGroupKeyboard(connection, facultyAlias, course).then(chooseGroupKeyboard => {
+		keyboards.getGroupKeyboard(query, facultyAlias, course).then(chooseGroupKeyboard => {
 			if (chooseGroupKeyboard.some(elem => elem[0].callback_data === action)) {
-				settings_model.getGroupId(connection, action).then(group_id => {
+				settings_model.getGroupId(query, action).then(group_id => {
 					if(group_id === undefined) {
 						return;
 					}
 					userParams.push(group_id);
 					userParams.push(msg.chat.id);
-					user_model.getUserData(connection, group_id).then(userData => {
+					user_model.getUserData(query, group_id).then(userData => {
 						if (userData[0] === undefined) {
 							return;
 						}
@@ -191,9 +193,9 @@ bot.on('callback_query', function (callbackQuery) {
 	
 	if (facultyAlias !== undefined && course === undefined) {
 		course = action;
-		keyboards.getCourseKeyboard(connection, facultyAlias).then(chooseCourseKeyboard => {
+		keyboards.getCourseKeyboard(query, facultyAlias).then(chooseCourseKeyboard => {
 			if (chooseCourseKeyboard.some(elem => elem.callback_data === action)) {
-				bot_actions.chooseGroup(connection, msg, facultyAlias, action).then(msgParams => {
+				bot_actions.chooseGroup(query, msg, facultyAlias, action).then(msgParams => {
 					bot.editMessageText(...msgParams);
 				}).catch ((err) => console.error('Error: ' + err));
 			}
@@ -202,7 +204,7 @@ bot.on('callback_query', function (callbackQuery) {
 	
 	if (facultyAlias === undefined, course === undefined) {
 		facultyAlias = action;
-		bot_actions.chooseCourse(connection, msg, action).then(msgParams => {
+		bot_actions.chooseCourse(query, msg, action).then(msgParams => {
 			bot.editMessageText(...msgParams);
 		}).catch ((err) => console.error('Error: ' + err));
 	}
@@ -211,9 +213,9 @@ bot.on('callback_query', function (callbackQuery) {
 
 		let chatId = msg.chat.id;
 
-		user_model.getUser(connection, chatId).then(user => {
+		user_model.getUser(query, chatId).then(user => {
 			if (user[0] === undefined) {
-					settings_model.insertUserData(connection, ...userParams).then(result => {
+					settings_model.insertUserData(query, ...userParams).then(result => {
 						if (result.affectedRows === 0) {
 							userParams = [];
 							bot.editMessageText(...bot_actions.saveSettingsError(msg));
@@ -223,7 +225,7 @@ bot.on('callback_query', function (callbackQuery) {
 						bot.sendMessage(chatId, ...bot_actions.doAction());
 					}).catch ((err) => console.error('Error: ' + err));
 			} else {
-					settings_model.updateUserData(connection, ...userParams).then(result => {
+					settings_model.updateUserData(query, ...userParams).then(result => {
 						if (result.affectedRows === 0) {
 							userParams = [];
 							bot.editMessageText(...bot_actions.saveSettingsError(msg));

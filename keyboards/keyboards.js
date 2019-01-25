@@ -58,8 +58,8 @@ let facultyChooseKeyboard =
 		]
 	];
 
-const getCourseKeyboard = async(connection, facultyAlias) => {
-	const courses = await settings_model.getCourses(connection, facultyAlias);
+const getCourseKeyboard = async(query, facultyAlias) => {
+	const courses = await settings_model.getCourses(query, facultyAlias);
 	if (courses.length !== 0) {
 		let chooseCourseKeyboard = [];
 		for(let i = 0; i < courses.length; i++) {
@@ -69,8 +69,8 @@ const getCourseKeyboard = async(connection, facultyAlias) => {
 	}
 }
 
-const getGroupKeyboard = async(connection, facultyAlias, course) => {
-	const groups = await settings_model.getGroups(connection, facultyAlias, course);
+const getGroupKeyboard = async(query, facultyAlias, course) => {
+	const groups = await settings_model.getGroups(query, facultyAlias, course);
 	if(groups.length !== 0) {
 		let chooseGroupKeyboard = [];
 		for (let i = 0; i < groups.length; i++) {

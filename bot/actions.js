@@ -172,7 +172,7 @@ function getScheduleMsgText(schedule) {
 	let schLength = schedule.length;
 	let subject;
 	if(schLength != 0) {
-		for(let i = 0; i < schLength; i++){
+		for(let i = 0; i < schLength; i++) {
 			let subjLength = schedule[i].subjects.length;
 			text += `*${schedule[i].day}, ${schedule[i].date}*\n`;
 			for(let j = 0; j < subjLength; j++){
